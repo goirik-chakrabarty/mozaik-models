@@ -37,7 +37,18 @@ def create_experiments_spont(model):
     return [
         # Spontaneous Activity
         NoStimulation(model, ParameterSet(
-            {'duration': 3*8*2*5*3*8*7})),
+            {'duration': 1001})),
+    ]
+
+def create_experiments_video(model):
+    return [
+        # Spontaneous Activity
+        MeasurePixelMovieFromFile(model, ParameterSet(
+            {'duration': 2100,
+             'movie_path': './',
+             'movie_name': 'test.npy',
+             'num_trials': 10,
+             'shuffle_stimuli': False})),
     ]
 
 def create_experiments_spont_STW(model):

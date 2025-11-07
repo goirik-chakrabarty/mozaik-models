@@ -1,0 +1,22 @@
+{
+    "submission_date": null,
+    "run_date": "07/11/2025-14:19:29",
+    "simulation_run_name": "test",
+    "model_name": "SelfSustainedPushPull",
+    "model_description": null,
+    "results": {
+        "$ref": "results.json"
+    },
+    "stimuli": {
+        "$ref": "stimuli.json"
+    },
+    "recorders": {
+        "$ref": "recorders.json"
+    },
+    "experimental_protocols": {
+        "$ref": "experimental_protocols.json"
+    },
+    "parameters": {
+        "$ref": "parameters.json"
+    }
+}

@@ -4,16 +4,19 @@ This is the implementation of the model corresponding to the pre-print `Iso-orie
 Rózsa, T., Cagnol, R., Antolík, J. (2024).
 https://www.biorxiv.org/ TODO: Update
 """
+import sys
 import matplotlib
 matplotlib.use('Agg')
 
 from mpi4py import MPI
 from mozaik.storage.datastore import Hdf5DataStore, PickledDataStore
 from parameters import ParameterSet
-from analysis_and_visualization import perform_analysis_and_visualization_spont
+#from analysis_and_visualization import perform_analysis_and_visualization_spont
 from model import SelfSustainedPushPull
-from experiments import create_experiments_spont
+from experiments import create_experiments_video
 import mozaik
+print(">>>>>>>>>>>>>>>>", mozaik.__file__)
+
 from mozaik.controller import run_workflow, setup_logging
 import mozaik.controller
 import sys
@@ -28,7 +31,7 @@ nest.Install("stepcurrentmodule")
 
 if True:
     data_store, model = run_workflow(
-        'SelfSustainedPushPull', SelfSustainedPushPull, create_experiments_spont)
+        'SelfSustainedPushPull', SelfSustainedPushPull, create_experiments_video)
     if False:
         model.connectors['V1AffConnectionOn'].store_connections(data_store)
         model.connectors['V1AffConnectionOff'].store_connections(data_store)
@@ -58,6 +61,6 @@ else:
     data_store = PickledDataStore(load=True, parameters=ParameterSet(
         {'root_directory': 'SelfSustainedPushPull_test____', 'store_stimuli': False}), replace=True)
 
-if mpi_comm.rank == 0:
-    print("Starting visualization")
-    perform_analysis_and_visualization_spont(data_store)
+#if mpi_comm.rank == 0:
+#    print("Starting visualization")
+#    perform_analysis_and_visualization_spont(data_store)

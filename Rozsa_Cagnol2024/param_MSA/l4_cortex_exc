@@ -3,7 +3,7 @@
     'component': 'mozaik.sheets.vision.VisualCorticalUniformSheet',
     'params':{
                 'name':'V1_Exc_L4',
-                'sx':5000.0,
+                'sx':150.0,
                 'sy':ref('sheets.l4_cortex_exc.params.sx'),
                 'density': 5000.0,
                 'mpi_safe' : False,    
@@ -93,7 +93,7 @@
         'num_samples_expression' : '',
         'base_weight': 0.00018,
 	'annotation_reference_name' : 'aff_samples',
-        'self_connections': True,
+        #'self_connections': True,
         'num_samples' : ref('sheets.l4_cortex_exc.K')*4.0/5.0*(1-ref('sheets.l4_cortex_exc.feedback_conn_ratio')),
         'local_module': None,
 },
@@ -138,7 +138,7 @@
         'num_samples_expression' : ref('sheets.l4_cortex_exc.L4ExcL4ExcConnection.num_samples_expression'),
 	'annotation_reference_name' : 'aff_samples',
         'num_samples' : ref('sheets.l4_cortex_exc.L4ExcL4ExcConnection.num_samples') * ref('sheets.l4_cortex_exc.inhibitory_connection_ratio'),
-        'self_connections': ref('sheets.l4_cortex_exc.L4ExcL4ExcConnection.self_connections'),
+        #'self_connections': ref('sheets.l4_cortex_exc.L4ExcL4ExcConnection.self_connections'),
         'local_module': None,
     },
 

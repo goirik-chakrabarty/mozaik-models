@@ -33,5 +33,4 @@
        'sheet_name': 'V1_Exc_L4',
        'threshold': 50,
     },
-    'steps_get_data': 0,
 }
