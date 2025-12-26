@@ -1,0 +1,310 @@
+{
+    "00000": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00000.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":0, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00001": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00001.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":0, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00002": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 66,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2205, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00002.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":0, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00003": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00003.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":0, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00004": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00005.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":0, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00005": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00008.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":0, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00006": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00011.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":0, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00007": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00000.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":1, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00008": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00001.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":1, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00009": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 66,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2205, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00002.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":1, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00010": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00003.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":1, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00011": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00005.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":1, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00012": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00008.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":1, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00013": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00011.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":1, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00014": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00000.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":2, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00015": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00001.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":2, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00016": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 66,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2205, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00002.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":2, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00017": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00003.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":2, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00018": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00005.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":2, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00019": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00008.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":2, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00020": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00011.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":2, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00021": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00000.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":3, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00022": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00001.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":3, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00023": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 66,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2205, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00002.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":3, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00024": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 63,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":2100, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":7, \"movie_name\":'00003.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":3, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00025": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00005.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":3, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00026": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00008.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":3, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    },
+    "00027": {
+        "modality": "video",
+        "image_size": [
+            64,
+            64
+        ],
+        "num_frames": 14,
+        "first_frame_idx": 0,
+        "tier": "train",
+        "stim_type": "{\"module_path\" :\"mozaik.stimuli.vision.topographica_based\",\"background_luminance\":50.0, \"density\":13.090907186777137, \"direct_stimulation_name\":None, \"direct_stimulation_parameters\":None, \"duration\":497.0, \"frame_duration\":7.0, \"frame_offset\":0, \"location_x\":0.0, \"location_y\":0.0, \"movie_frame_duration\":497.0, \"movie_name\":'00011.npy', \"movie_path\":'/data/dynamic29513-my-test/screen/data', \"name\":'PixelMovieExperanto', \"size\":11, \"size_x\":11.0, \"size_y\":11.0, \"trial\":3, \"video_max_value\":255.0, \"x_location\":0.0, \"y_location\":0.0}"
+    }
+}

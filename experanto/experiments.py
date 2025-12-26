@@ -1,4 +1,5 @@
 #!/usr/local/bin/ipython -i
+import os
 from mozaik.experiments import *
 from mozaik.experiments.vision import *
 from mozaik.experiments.optogenetic import *
@@ -41,15 +42,18 @@ def create_experiments_spont(model):
     ]
 
 def create_experiments_video(model):
+    offset = int(os.environ.get('STIM_OFFSET', 0))
+    window = int(os.environ.get('STIM_WINDOW', 0))
     return [
-        # Spontaneous Activity
         MeasurePixelMovieExperanto(model, ParameterSet(
             {
-            'base_path': '/data/dynamic29513-my-test',
+            'base_path': '/data/dynamic29513-3-5-Video-full',
             'movie_name': '',
             "width" : 11,
             "movie_frame_duration" : 7,
             "global_frame_offset" : 0,
+            "stimulus_offset" : offset,
+            "stimulus_window" : window,
             "images_per_trial" : 300,
             "num_presentation_trials" : 1,
             "num_trials": 4,

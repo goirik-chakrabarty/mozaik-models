@@ -43,7 +43,7 @@ def create_experiments_spont(model):
 def create_experiments_video(model):
     return [
         # Spontaneous Activity
-        MeasurePixelMovieFromFile(model, ParameterSet(
+        MeasurePixelMovieExperanto(model, ParameterSet(
             {'duration': 2100,
              'movie_path': './',
              'movie_name': 'test.npy',
