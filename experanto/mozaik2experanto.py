@@ -15,31 +15,84 @@ def get_process_memory():
 class MozaikTrialExporter:
     """
     Stateful exporter to handle batch processing of Mozaik DataStoreViews
-    into a single large output file.
+    into a single large output file. 
+    Supports appending to an existing export if append_mode=True.
     """
-    def __init__(self, output_dir, trial_id, sampling_rate=1000.0, smooth_param=None):
+    def __init__(self, output_dir, trial_id, sampling_rate=1000.0, smooth_param=None, append_mode=False):
         self.output_dir = output_dir
         self.trial_id = trial_id
         self.sampling_rate = sampling_rate
         self.smooth_param = smooth_param
         
         self.meta_segments = []
-        self.all_unit_spike_lists = None # Will initialize on first batch
+        self.all_unit_spike_lists = None 
         self.num_units = 0
         self.total_bins_accumulated = 0
         self.current_time_offset = 0.0
         
-        # Temp file for Memmap chunks if needed later, 
-        # currently we assume the user primarily needs spikes.npy (1D) for the large file.
-        # If a full unified memmap is needed, we'd need to know total size upfront.
-        
         os.makedirs(self.output_dir, exist_ok=True)
-        print(f"Exporter initialized. Target: {self.output_dir}")
+        
+        # Check for existing data if append_mode is active
+        if append_mode:
+            self._load_existing_state()
+        else:
+            print(f"Exporter initialized. Target: {self.output_dir} (New Export)")
+
+    def _load_existing_state(self):
+        """Attempts to load state from existing meta.yaml and spikes.npy."""
+        meta_path = os.path.join(self.output_dir, 'meta.yaml')
+        spikes_path = os.path.join(self.output_dir, 'spikes.npy')
+        
+        if os.path.exists(meta_path) and os.path.exists(spikes_path):
+            print(f"Loading existing data from {self.output_dir}...")
+            
+            # 1. Load Metadata
+            with open(meta_path, 'r') as f:
+                meta_data = yaml.safe_load(f)
+            
+            # Verify compatibility
+            if meta_data.get('sampling_rate') != self.sampling_rate:
+                raise ValueError("Sampling rate mismatch with existing data.")
+            if meta_data.get('trial_id') != self.trial_id:
+                print(f"Warning: Existing data has trial_id {meta_data.get('trial_id')}, expected {self.trial_id}")
+
+            self.num_units = meta_data['num_units']
+            self.total_bins_accumulated = meta_data['num_timepoints']
+            self.meta_segments = meta_data.get('stimuli_order', [])
+            spike_indices = meta_data['spike_indices']
+            
+            # Calculate current time offset from accumulated bins
+            bin_size_ms = 1000.0 / self.sampling_rate
+            self.current_time_offset = self.total_bins_accumulated * bin_size_ms
+            
+            # 2. Load Spikes and Reconstruct Lists
+            # We must load the full array to append to it efficiently in memory
+            flat_spikes = np.load(spikes_path)
+            
+            self.all_unit_spike_lists = []
+            
+            # Reconstruct list of lists using the indices (CSR-like structure)
+            # indices stores the start of each unit's chunk. 
+            # We assume the chunks are contiguous and cover the whole array.
+            extended_indices = spike_indices + [len(flat_spikes)]
+            
+            for i in range(self.num_units):
+                start = extended_indices[i]
+                end = extended_indices[i+1]
+                # Copying to list allows appending later
+                unit_spikes = flat_spikes[start:end]
+                self.all_unit_spike_lists.append([unit_spikes]) 
+                
+            print(f"Resumed from offset: {self.current_time_offset} ms with {self.num_units} units.")
+            del flat_spikes # Free raw buffer
+            gc.collect()
+        else:
+            print("No existing data found to append. Starting fresh.")
 
     def process_batch(self, dsv_or_list):
         """
         Process a batch of DSVs. Accumulates spike times in memory lists 
-        (or temp files if optimized further) and updates metadata.
+        and updates metadata.
         """
         if isinstance(dsv_or_list, (list, tuple)):
             dsvs = dsv_or_list
@@ -79,7 +132,7 @@ class MozaikTrialExporter:
             print("No matching segments in this batch.")
             return
 
-        # 2. Initialize Unit Count (On first batch)
+        # 2. Initialize Unit Count (On first batch if not loaded from disk)
         if self.all_unit_spike_lists is None:
             test_seg = batch_segments[0]['segment']
             self.num_units = len(test_seg.get_spiketrains())
@@ -100,12 +153,6 @@ class MozaikTrialExporter:
             
             # Store metadata
             self.meta_segments.append(meta['stim_name'])
-            
-            # --- Smoothing Prep (Optional) ---
-            # Even if we don't save the full memmap for the huge file to save IO, 
-            # we calculate it here if the user wanted to process it.
-            # Currently, to merge Memmaps efficiently, we would need to append to a file.
-            # For this 'large file' loop implementation, we prioritize spikes.npy aggregation.
             
             # Load spikes
             spiketrains = seg.get_spiketrains()
@@ -144,6 +191,7 @@ class MozaikTrialExporter:
         unit_indices = [0]
         
         # Flatten the list of lists
+        # Note: If we loaded existing data, unit_chunks will contain [old_array, new_array_1, new_array_2...]
         for unit_idx, unit_chunks in enumerate(self.all_unit_spike_lists):
             if unit_chunks:
                 unit_arr = np.concatenate(unit_chunks)
@@ -180,11 +228,11 @@ class MozaikTrialExporter:
 
 
 def export_mozaik_trial_streamed(dsv_or_list, output_dir, trial_id, sampling_rate=1000.0, 
-                                 smooth_param=None):
+                                 smooth_param=None, append_mode=False):
     """
     Wrapper function for backward compatibility. 
     Processes the given DSV(s) in one go using the Exporter class.
     """
-    exporter = MozaikTrialExporter(output_dir, trial_id, sampling_rate, smooth_param)
+    exporter = MozaikTrialExporter(output_dir, trial_id, sampling_rate, smooth_param, append_mode)
     exporter.process_batch(dsv_or_list)
     exporter.finalize()
