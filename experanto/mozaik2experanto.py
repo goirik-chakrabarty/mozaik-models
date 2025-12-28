@@ -1,116 +1,190 @@
-from mozaik.storage.datastore import PickledDataStore
-from parameters import ParameterSet
-from mozaik.storage.queries import param_filter_query
-from mozaik.tools.distribution_parametrization import load_parameters
-import logging
-import sys
-from mozaik.storage.queries import *
-from mozaik.analysis.analysis import *
-logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-from mozaik.storage.datastore import DataStoreView
-import matplotlib.pyplot as plt
 import numpy as np
+import yaml
+import os
 import ast
+import gc
+import psutil
+import shutil
+from scipy.ndimage import gaussian_filter1d
 
-# Path to the experiment DataStore
-# Substitute this path with the path of your own simulation run!
-# path = "SelfSustainedPushPull_test_____"
-path = "SelfSustainedPushPull_test:fullbig32_32_____"
+def get_process_memory():
+    """Returns current process memory usage in MB."""
+    process = psutil.Process(os.getpid())
+    return process.memory_info().rss / 1024 / 1024
 
-data_store = PickledDataStore(
-    load=True,
-    parameters=ParameterSet({"root_directory": path, "store_stimuli": False}),
-    replace=False,
-)
-
-data_store.print_content()
-
-dsv = param_filter_query(
-        data_store, st_name="PixelMovieExperanto", sheet_name="V1_Exc_L2/3"
-    )
-dsv.print_content()
-segs = dsv.get_segments()
-
-print("Sample content of Stimulus annotation:")
-print(ast.literal_eval(segs[0].annotations['stimulus']))
-print('-'*50)
-
-segs, stims = dsv.get_segments(), dsv.get_stimuli()
-for i in range(len(segs)):
-    print(f"Segment {i}:", ast.literal_eval(segs[i].annotations['stimulus'])['trial'], ast.literal_eval(segs[i].annotations['stimulus'])['movie_name'], ast.literal_eval(segs[i].annotations['stimulus'])['duration'])
-print('-'*50)
-
-# 1. Retrieve data
-bin_size = 1 / 8 * 1000
-
-# 2. First Pass: Scan for Metadata
-all_movie_names = set()
-max_duration = 0.0
-max_trial_index = 0
-
-for s in segs:
-    params = ast.literal_eval(s.annotations['stimulus'])
-    all_movie_names.add(params['movie_name'])
-    if params['duration'] > max_duration:
-        max_duration = params['duration']
-    if int(params['trial']) > max_trial_index:
-        max_trial_index = int(params['trial'])
-
-unique_movies = sorted(list(all_movie_names))
-movie_to_index = {name: i for i, name in enumerate(unique_movies)}
-
-num_trials = max_trial_index + 1
-num_stimuli = len(unique_movies)
-num_neurons = len(segs[0].get_spiketrains())
-num_bins = int(np.ceil(max_duration / bin_size))
-
-print(f"Array Shape: ({num_trials}, {num_stimuli}, {num_neurons}, {num_bins})")
-
-# 3. Initialize with NaNs (Standard for 'missing' data)
-# Note: This forces the array to be float type
-spikes_all_stimuli = np.full((num_trials, num_stimuli, num_neurons, num_bins), np.nan)
-
-# 4. Second Pass: Fill the Data
-for i, seg in enumerate(segs):
-    print(f"Processing Segment {i+1}/{len(segs)}")
-    stim_params = ast.literal_eval(seg.annotations['stimulus'])
-    
-    trial_idx = int(stim_params['trial'])
-    stim_idx = movie_to_index[stim_params['movie_name']]
-    current_segment_duration = stim_params['duration']
-    
-    # Calculate how many bins strictly belong to THIS segment
-    num_segment_bins = int(np.ceil(current_segment_duration / bin_size))
-    
-    for k in range(num_neurons):
-        spike_times = np.array(seg.get_spiketrains()[k])
+class MozaikTrialExporter:
+    """
+    Stateful exporter to handle batch processing of Mozaik DataStoreViews
+    into a single large output file.
+    """
+    def __init__(self, output_dir, trial_id, sampling_rate=1000.0, smooth_param=None):
+        self.output_dir = output_dir
+        self.trial_id = trial_id
+        self.sampling_rate = sampling_rate
+        self.smooth_param = smooth_param
         
-        # Filter valid spikes
-        valid_spikes = spike_times[spike_times < current_segment_duration]
+        self.meta_segments = []
+        self.all_unit_spike_lists = None # Will initialize on first batch
+        self.num_units = 0
+        self.total_bins_accumulated = 0
+        self.current_time_offset = 0.0
         
-        # Calculate indices
-        spike_indices = (valid_spikes // bin_size).astype(int)
-        valid_indices_mask = spike_indices < num_segment_bins
-        final_indices = spike_indices[valid_indices_mask]
+        # Temp file for Memmap chunks if needed later, 
+        # currently we assume the user primarily needs spikes.npy (1D) for the large file.
+        # If a full unified memmap is needed, we'd need to know total size upfront.
         
-        # Get counts for the valid window only
-        counts = np.bincount(final_indices, minlength=num_segment_bins)
-        
-        # Trim just in case
-        counts = counts[:num_segment_bins]
-        
-        # --- Assignment Logic for NaNs ---
-        # We need to handle the existing NaNs. 
-        # If the slot is currently NaN, treat it as 0 before adding the new counts.
-        
-        # 1. Get the slice of the array that corresponds to valid time
-        current_data = spikes_all_stimuli[trial_idx, stim_idx, k, :num_segment_bins]
-        
-        # 2. Replace NaNs with 0 so we can add (if this is the first segment, they are all Nan)
-        current_data = np.nan_to_num(current_data, nan=0.0)
-        
-        # 3. Add the new counts and write back
-        spikes_all_stimuli[trial_idx, stim_idx, k, :num_segment_bins] = current_data + counts
+        os.makedirs(self.output_dir, exist_ok=True)
+        print(f"Exporter initialized. Target: {self.output_dir}")
 
-print("Final array shape:", spikes_all_stimuli.shape)
-print("Example of padding (last 5 bins of first entry):", spikes_all_stimuli[0, 0, 0, -5:])
+    def process_batch(self, dsv_or_list):
+        """
+        Process a batch of DSVs. Accumulates spike times in memory lists 
+        (or temp files if optimized further) and updates metadata.
+        """
+        if isinstance(dsv_or_list, (list, tuple)):
+            dsvs = dsv_or_list
+        else:
+            dsvs = [dsv_or_list]
+            
+        if not dsvs:
+            return
+
+        print(f"Processing batch of {len(dsvs)} DSVs... (Mem: {get_process_memory():.2f} MB)")
+        
+        # 1. Scan Metadata for this batch
+        batch_segments = []
+        for dsv in dsvs:
+            segment_refs = dsv.get_segments()
+            for seg in segment_refs:
+                try:
+                    if isinstance(seg.annotations['stimulus'], str):
+                        stim_params = ast.literal_eval(seg.annotations['stimulus'])
+                    else:
+                        stim_params = seg.annotations['stimulus']
+                except (ValueError, SyntaxError):
+                     print(f"Warning: Parse error for segment {seg}. Skipping.")
+                     continue
+
+                if int(stim_params['trial']) == self.trial_id:
+                    batch_segments.append({
+                        'segment': seg,
+                        'stim_name': stim_params.get('movie_name', stim_params.get('name', 'unknown')),
+                        'duration': stim_params['duration']
+                    })
+        
+        # Sort batch by stimulus name to maintain local order
+        batch_segments.sort(key=lambda x: x['stim_name'])
+        
+        if not batch_segments:
+            print("No matching segments in this batch.")
+            return
+
+        # 2. Initialize Unit Count (On first batch)
+        if self.all_unit_spike_lists is None:
+            test_seg = batch_segments[0]['segment']
+            self.num_units = len(test_seg.get_spiketrains())
+            if hasattr(test_seg, 'release'):
+                test_seg.release()
+            
+            # List of lists to hold spikes for each unit
+            self.all_unit_spike_lists = [[] for _ in range(self.num_units)]
+            print(f"Initialized for {self.num_units} units.")
+
+        bin_size_ms = 1000.0 / self.sampling_rate
+
+        # 3. Stream Process this Batch
+        for i, meta in enumerate(batch_segments):
+            seg = meta['segment']
+            seg_duration = meta['duration']
+            num_seg_bins = int(np.ceil(seg_duration / bin_size_ms))
+            
+            # Store metadata
+            self.meta_segments.append(meta['stim_name'])
+            
+            # --- Smoothing Prep (Optional) ---
+            # Even if we don't save the full memmap for the huge file to save IO, 
+            # we calculate it here if the user wanted to process it.
+            # Currently, to merge Memmaps efficiently, we would need to append to a file.
+            # For this 'large file' loop implementation, we prioritize spikes.npy aggregation.
+            
+            # Load spikes
+            spiketrains = seg.get_spiketrains()
+            
+            limit_units = min(self.num_units, len(spiketrains))
+            
+            for unit_idx in range(limit_units):
+                spikes = np.array(spiketrains[unit_idx])
+                
+                # Filter valid spikes within duration
+                valid_spikes = spikes[spikes < seg_duration]
+                
+                # Shift by global time offset
+                shifted_spikes = valid_spikes + self.current_time_offset
+                
+                # Append to the unit's master list
+                self.all_unit_spike_lists[unit_idx].append(shifted_spikes)
+
+            # Update global offsets
+            self.current_time_offset += seg_duration
+            self.total_bins_accumulated += num_seg_bins
+            
+            if hasattr(seg, 'release'):
+                seg.release()
+        
+        print(f"Batch complete. Current Offset: {self.current_time_offset} ms. (Mem: {get_process_memory():.2f} MB)")
+
+    def finalize(self):
+        """
+        Writes the final spikes.npy and meta.yaml combining all batches.
+        """
+        print("Finalizing export...")
+        print(f"Memory before concat: {get_process_memory():.2f} MB")
+        
+        final_flat_spikes = []
+        unit_indices = [0]
+        
+        # Flatten the list of lists
+        for unit_idx, unit_chunks in enumerate(self.all_unit_spike_lists):
+            if unit_chunks:
+                unit_arr = np.concatenate(unit_chunks)
+            else:
+                unit_arr = np.array([])
+            
+            final_flat_spikes.append(unit_arr)
+            unit_indices.append(unit_indices[-1] + len(unit_arr))
+            
+            # Clear memory of this unit's list as we go
+            self.all_unit_spike_lists[unit_idx] = None
+
+        spikes_1d = np.concatenate(final_flat_spikes)
+        
+        # Save Main Output
+        np.save(os.path.join(self.output_dir, 'spikes.npy'), spikes_1d)
+        
+        # Save Metadata
+        meta_data = {
+            'num_units': self.num_units,
+            'num_timepoints': self.total_bins_accumulated,
+            'trial_id': self.trial_id,
+            'sampling_rate': self.sampling_rate,
+            'spike_indices': unit_indices[:-1],
+            'stimuli_order': self.meta_segments,
+            'smoothing': self.smooth_param
+        }
+        
+        with open(os.path.join(self.output_dir, 'meta.yaml'), 'w') as f:
+            yaml.dump(meta_data, f)
+            
+        print(f"Export Complete. Total Units: {self.num_units}, Total Time: {self.current_time_offset}ms")
+        print(f"Final Memory: {get_process_memory():.2f} MB")
+
+
+def export_mozaik_trial_streamed(dsv_or_list, output_dir, trial_id, sampling_rate=1000.0, 
+                                 smooth_param=None):
+    """
+    Wrapper function for backward compatibility. 
+    Processes the given DSV(s) in one go using the Exporter class.
+    """
+    exporter = MozaikTrialExporter(output_dir, trial_id, sampling_rate, smooth_param)
+    exporter.process_batch(dsv_or_list)
+    exporter.finalize()
