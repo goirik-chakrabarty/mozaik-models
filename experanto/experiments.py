@@ -56,7 +56,7 @@ def create_experiments_video(model):
             "stimulus_window" : window,
             "images_per_trial" : 300,
             "num_presentation_trials" : 1,
-            "num_trials": 4,
+            "num_trials": 10,
             "shuffle_stimuli": False,
             "video_max_value": 255.0,
             })),

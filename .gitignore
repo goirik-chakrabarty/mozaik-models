@@ -218,5 +218,6 @@ __marimo__/
 
 # My own ignores
 *SelfSustainedPushPull_test*
+*SelfSustainedPushPull*
 *.npy
-*/data/*
+*/data*

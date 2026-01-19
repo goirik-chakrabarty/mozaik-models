@@ -236,3 +236,112 @@ def export_mozaik_trial_streamed(dsv_or_list, output_dir, trial_id, sampling_rat
     exporter = MozaikTrialExporter(output_dir, trial_id, sampling_rate, smooth_param, append_mode)
     exporter.process_batch(dsv_or_list)
     exporter.finalize()
+
+class MozaikScreenExporter:
+    """
+    Exports visual stimulus data by copying original movie files referenced 
+    in Mozaik annotations and generating Experanto-compatible metadata.
+    """
+    def __init__(self, output_dir, trial_id):
+        self.output_dir = os.path.join(output_dir, 'screen')
+        self.trial_id = trial_id
+        self.processed_movies = set()
+        
+        # Ensure screen directory exists
+        os.makedirs(self.output_dir, exist_ok=True)
+        
+        # Create the Device-level meta.yml required by Experanto
+        # This tells Experanto to use the VideoInterpolator
+        device_meta = {
+            'modality': 'video',
+            'interpolation': {
+                'interp_mode': 'nearest' # or 'linear'
+            }
+        }
+        with open(os.path.join(self.output_dir, 'meta.yml'), 'w') as f:
+            yaml.dump(device_meta, f)
+
+    def process_batch(self, dsv_or_list):
+        if not isinstance(dsv_or_list, list):
+            dsvs = [dsv_or_list]
+        else:
+            dsvs = dsv_or_list
+
+        print(f"Exporting screen data for {len(dsvs)} segments...")
+
+        for dsv in dsvs:
+            for seg in dsv.get_segments():
+                # 1. Parse Stimulus Annotation
+                # try:
+                if 'stimulus' not in seg.annotations:
+                    continue
+                    
+                stim_str = seg.annotations['stimulus']
+                # Handle cases where annotation is a string or already a dict
+                params = ast.literal_eval(stim_str) if isinstance(stim_str, str) else stim_str
+                
+                # Filter by trial if necessary (though usually we want all unique movies)
+                if int(params.get('trial', -1)) != self.trial_id:
+                    continue
+
+                movie_name = params.get('movie_name')
+                movie_path = params.get('movie_path')
+                
+                if not movie_name or not movie_path:
+                    print(f"Skipping segment {seg.name}: Missing movie path/name info.")
+                    continue
+                    
+                # unique identifier for this file
+                if movie_name in self.processed_movies:
+                    continue
+
+                # 2. Locate Source File
+                src_file = os.path.join(movie_path, movie_name)
+                dst_file = os.path.join(self.output_dir, 'data', movie_name)
+                
+                if not os.path.exists(src_file):
+                    print(f"WARNING: Source movie file not found at {src_file}")
+                    continue
+
+                # 3. Copy .npy File
+                print(f"Copying {movie_name}...")
+                shutil.copy2(src_file, dst_file)
+                
+                # 4. Generate Stimulus Metadata (.yaml)
+                # Experanto expects a .yaml file with the same name as the .npy file
+                # We map Mozaik params to Experanto keys
+                
+                # Calculate stats from params
+                frame_duration_ms = float(params.get('frame_duration', 33.33))
+                duration_ms = float(params.get('duration', 0))
+                num_frames = int(duration_ms / frame_duration_ms)
+                
+                # Attempt to get image size from params, or load the file to check
+                # (Loading is safer but slower; params are faster)
+                size_x = params.get('size_x', params.get('size_x_deg', 0)) # Note: this might be degrees, check units
+                # If you need pixel resolution, it's best to load the file briefly:
+                # data = np.load(src_file, mmap_mode='r')
+                # shape = data.shape
+                
+                meta_content = {
+                    'modality': 'video',
+                    'stim_type': 'stimulus.Clip',
+                    'trial_idx': int(params.get('trial', 0)),
+                    'tier': 'train', # You might want to parameterize this
+                    'num_frames': num_frames,
+                    'image_size': [144, 256], # Replace with actual dimensions if dynamic
+                    'condition_hash': str(movie_name), # Or use a real hash
+                    
+                    # Crucial for interpolation:
+                    'frame_rate': 1000.0 / frame_duration_ms if frame_duration_ms > 0 else 30.0,
+                    'timestamps': None # Optional, if frames are regularly spaced
+                }
+                
+                meta_filename = os.path.splitext(movie_name)[0] + '.yaml'
+                with open(os.path.join(self.output_dir, 'meta', meta_filename), 'w') as f:
+                    yaml.dump(meta_content, f)
+                    
+                self.processed_movies.add(movie_name)
+
+                # except Exception as e:
+                #     print(f"Error processing screen export for segment: {e}")
