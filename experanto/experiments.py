@@ -47,7 +47,7 @@ def create_experiments_video(model):
     return [
         MeasurePixelMovieExperanto(model, ParameterSet(
             {
-            'base_path': '/data/dynamic29513-3-5-Video-full',
+            'base_path': '/home/goirik/data/dynamic29513-my-test',
             'movie_name': '',
             "width" : 11,
             "movie_frame_duration" : 7,
@@ -56,7 +56,7 @@ def create_experiments_video(model):
             "stimulus_window" : window,
             "images_per_trial" : 300,
             "num_presentation_trials" : 1,
-            "num_trials": 10,
+            "num_trials": 2,
             "shuffle_stimuli": False,
             "video_max_value": 255.0,
             })),
