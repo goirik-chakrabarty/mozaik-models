@@ -211,8 +211,9 @@ class MozaikTrialExporter:
         
         # Save Metadata
         meta_data = {
-            'num_units': self.num_units,
-            'num_timepoints': self.total_bins_accumulated,
+            'modality': 'spikes',
+            'n_signals': self.num_units,
+            'end_time': self.total_bins_accumulated,
             'trial_id': self.trial_id,
             'sampling_rate': self.sampling_rate,
             'spike_indices': unit_indices[:-1],

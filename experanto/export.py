@@ -18,15 +18,15 @@ from mozaik2experanto import MozaikScreenExporter, MozaikTrialExporter
 sys.path.append('/experanto')
 import experanto
 
-output_dir = '/project/data'
+output_dir = '/data/dynamic29513-my-test/responses/responses'
 
 # Initialize the exporter ONCE before the loop
 exporter = MozaikTrialExporter(output_dir, trial_id=1, sampling_rate=1000.0)
 # screen_exporter = MozaikScreenExporter(output_dir, trial_id=1)
 
 dsv_list = []
-for num in range(0, 156):
-    stimuli = num * 8
+for num in range(0, 3):
+    stimuli = num * 20
     # path = f"SelfSustainedPushPull_test:fullbig32_{stimuli}_____"
     path = f"SelfSustainedPushPull_mozaik32_trials10_{stimuli}_____" # 2,3 are not completed.
     
@@ -43,7 +43,7 @@ for num in range(0, 156):
     )
     dsv_list.append(dsv)
     
-    # Process in batches of 2
+    # Process in batches of 12
     if (num + 1) % 12 == 0:
         # Feed the batch to the exporter
         exporter.process_batch(dsv_list)

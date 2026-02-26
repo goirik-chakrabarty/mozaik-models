@@ -44,19 +44,20 @@ def create_experiments_spont(model):
 def create_experiments_video(model):
     offset = int(os.environ.get('STIM_OFFSET', 0))
     window = int(os.environ.get('STIM_WINDOW', 0))
+    print(f"Using stimulus offset: {offset} and stimulus window: {window}")
     return [
         MeasurePixelMovieExperanto(model, ParameterSet(
             {
-            'base_path': '/data/dynamic29513-my-images-AA',
+            'base_path': '/data/dynamic29513-my-test',
             'movie_name': '',
             "width" : 11,
-            "movie_frame_duration" : 7,
+            "movie_frame_duration" : 35,
             "global_frame_offset" : 0,
             "stimulus_offset" : offset,
             "stimulus_window" : window,
             "images_per_trial" : 300,
             "num_presentation_trials" : 1,
-            "num_trials": 10,
+            "num_trials": 15,
             "shuffle_stimuli": False,
             "video_max_value": 255.0,
             })),
