@@ -48,7 +48,7 @@ def create_experiments_video(model):
     return [
         MeasurePixelMovieExperanto(model, ParameterSet(
             {
-            'base_path': '/data/dynamic29513-my-test',
+            'base_path': '/data/dynamic29513-3-5-Video-full',
             'movie_name': '',
             "width" : 11,
             "movie_frame_duration" : 35,
