@@ -89,11 +89,11 @@ def plot_corr(series1, series2, save_path):
     return corr
 
 
-AA_list = ["midAA_null35", "midAA_null1035", "midAA_null9035", "midAA_1sec", "midAA_9sec"]
-AA1_list = ["midAA_null35", "midAA_null1035", "midAA_null9035", "midAA_1sec", "midAA_9sec"]
+AA_list = ["AA_null35", "AA_null1035", "AA_null3035", "AA_null9035", "AA_1sec", "AA_3sec", "AA_9sec"]
+AA1_list = ["AA_null35", "AA_null1035", "AA_null3035", "AA_null9035", "AA_1sec", "AA_3sec", "AA_9sec"]
 
-# AA_list = ["AA1sec", "AA3sec"]
-# AA1_list = ["AA1sec", "AA3sec"]
+# AA_list = ["test12"]
+# AA1_list = ["test12"]
 
 data = {y:{x:0 for x in AA_list} for y in AA1_list}
 
@@ -102,7 +102,7 @@ datasets_mid = {}
 for aa_name in AA_list:
     datasets_mid[aa_name] = PickledDataStore(
         load=True,
-        parameters=ParameterSet({"root_directory": f"SelfSustainedPushPull_test:{aa_name}_12_____", "store_stimuli": False}),
+        parameters=ParameterSet({"root_directory": f"SelfSustainedPushPull_test:{aa_name}_____", "store_stimuli": False}),
         replace=False
     )
 

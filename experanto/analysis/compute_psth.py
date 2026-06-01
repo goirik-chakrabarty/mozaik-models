@@ -22,23 +22,34 @@ N_NEURONS = 20          # number of random neurons to sample
 BIN_SIZE_MS = 10         # PSTH bin width in milliseconds
 SHEET_NAME = "V1_Exc_L2/3"
 ST_NAME = "PixelMovieExperanto"
-OUTPUT_DIR = "results/psth_AB"
+OUTPUT_DIR = "results/psth_100trials"
 
 # Conditions to process
 AA_CONDITIONS = [
-    "midAA_null35",
-    "midAA_null1035",
-    "midAA_null9035",
-    "midAA_1sec",
-    "midAA_9sec",
+    # "AA_null35",
+    # "AA_null1035",
+    # "AA_null9035",
+    # "AA_1sec",
+    # "AA_9sec",
+    # "AA_1sec_200trials",
+    "AA_2sec_200trials",
+    # "AA_3sec_200trials",
+    # "AA_5sec_200trials",
+    # "AA_9sec_200trials",
 ]
 
 AB_CONDITIONS = [
-    "midAB_null35",
-    "midAB_null1035",
-    "midAB_null9035",
-    "midAB_1sec",
-    "midAB_9sec",
+    # "AB_null35",
+    # "AB_null1035",
+    # "AB_null9035",
+    # "AB_1sec",
+    # "AB_9sec",
+    # "AB_1sec_100trials",
+    # "AB_1sec_100trials-standard",
+    "AB_2sec_100trials",
+    # "AB_3sec_100trials",
+    # "AB_5sec_100trials",
+    # "AB_9sec_100trials",
 ]
 
 ALL_CONDITIONS = AA_CONDITIONS + AB_CONDITIONS
@@ -117,20 +128,121 @@ def compute_psth(segments, neuron_ids, bin_size_ms=BIN_SIZE_MS):
     bin_edges_ms = np.arange(n_bins + 1) * bin_size_ms  # in ms, relative to segment start
     return psth_dict, bin_edges_ms
 
+def corrected_compute_psth(segments, neuron_ids, bin_size_ms=BIN_SIZE_MS):
+    bin_size_s = bin_size_ms / 1000.0
+    neuron_set = set(neuron_ids)
+    n_trials = len(segments)
 
-def save_psth_npy(psth_dict, bin_edges_ms, neuron_ids, condition_name, output_dir):
+    # 1. Determine time extent and bin count from the first segment
+    seg0 = segments[0]
+    t_start_s = float(seg0.t_start.rescale('s').magnitude)
+    t_stop_s = float(seg0.t_stop.rescale('s').magnitude)
+    duration_s = t_stop_s - t_start_s
+    n_bins = int(np.ceil(duration_s / bin_size_s))
+
+    # 2. PRE-ALLOCATE: (Number of Neurons, Number of Trials, Number of Bins)
+    # This ensures that if a neuron doesn't fire in a trial, it stays 0.
+    all_counts = np.zeros((len(neuron_ids), n_trials, n_bins))
+    
+    # Create a mapping for quick index lookup
+    id_to_idx = {uid: i for i, uid in enumerate(neuron_ids)}
+
+    # 3. Fill the array
+    for trial_idx, seg in enumerate(tqdm(segments, desc="Computing PSTH", leave=False)):
+        seg_t_start = float(seg.t_start.rescale('s').magnitude)
+
+        for st in seg.spiketrains:
+            uid = st.annotations.get('source_id', st.name)
+            if uid in neuron_set:
+                neuron_idx = id_to_idx[uid]
+                spikes_s = st.rescale('s').magnitude - seg_t_start
+                
+                # Bin the spikes for this specific neuron in this specific trial
+                counts, _ = np.histogram(spikes_s, bins=n_bins, range=(0.0, n_bins * bin_size_s))
+                all_counts[neuron_idx, trial_idx, :] = counts
+
+    # 4. Average across trials (axis 1) and normalize to Hz
+    # Resulting shape: (len(neuron_ids), n_bins)
+    psth_matrix = np.mean(all_counts, axis=1) / bin_size_s
+    sem_matrix = (np.std(all_counts, axis=1, ddof=1) / np.sqrt(n_trials)) / bin_size_s
+
+    # Convert back to a dictionary to match your original return format
+    psth_dict = {uid: psth_matrix[i, :] for i, uid in enumerate(neuron_ids)}
+    sem_dict = {uid: sem_matrix[i, :] for i, uid in enumerate(neuron_ids)}
+    
+    bin_edges_ms = np.arange(n_bins + 1) * bin_size_ms
+    return psth_dict, sem_dict, bin_edges_ms
+
+
+def compute_population_psth(segments, neuron_ids, bin_size_ms=BIN_SIZE_MS):
+    """
+    Compute Population PSTH averaged across all specified neurons and trials.
+    
+    Returns
+    -------
+    population_psth : 1-D array (n_bins,)
+        Mean firing rate (Hz) across the population.
+    population_sem : 1-D array (n_bins,)
+        Standard error of the mean across neurons.
+    bin_edges_ms : 1-D array (n_bins+1,)
+        Bin edges in milliseconds.
+    """
+    bin_size_s = bin_size_ms / 1000.0
+    neuron_set = set(neuron_ids)
+    n_trials = len(segments)
+
+    # 1. Determine time extent and bin count from the first segment
+    seg0 = segments[0]
+    t_start_s = float(seg0.t_start.rescale('s').magnitude)
+    t_stop_s = float(seg0.t_stop.rescale('s').magnitude)
+    duration_s = t_stop_s - t_start_s
+    n_bins = int(np.ceil(duration_s / bin_size_s))
+
+    # 2. PRE-ALLOCATE: (Number of Neurons, Number of Trials, Number of Bins)
+    all_counts = np.zeros((len(neuron_ids), n_trials, n_bins))
+    
+    # Create a mapping for quick index lookup
+    id_to_idx = {uid: i for i, uid in enumerate(neuron_ids)}
+
+    # 3. Fill the array
+    for trial_idx, seg in enumerate(tqdm(segments, desc="Computing Pop. PSTH", leave=False)):
+        seg_t_start = float(seg.t_start.rescale('s').magnitude)
+
+        for st in seg.spiketrains:
+            uid = st.annotations.get('source_id', st.name)
+            if uid in neuron_set:
+                neuron_idx = id_to_idx[uid]
+                spikes_s = st.rescale('s').magnitude - seg_t_start
+                counts, _ = np.histogram(spikes_s, bins=n_bins, range=(0.0, n_bins * bin_size_s))
+                all_counts[neuron_idx, trial_idx, :] = counts
+
+    # 4. Average across trials first directly
+    mean_across_trials = np.mean(all_counts, axis=1) / bin_size_s  # Shape: (N_neurons, N_bins)
+    
+    # 5. Then average across neurons to get population response
+    population_psth = np.mean(mean_across_trials, axis=0)
+    population_sem = np.std(mean_across_trials, axis=0, ddof=1) / np.sqrt(len(neuron_ids))
+    
+    bin_edges_ms = np.arange(n_bins + 1) * bin_size_ms
+    return population_psth, population_sem, bin_edges_ms
+
+
+def save_psth_npy(psth_dict, sem_dict, bin_edges_ms, neuron_ids, condition_name, output_dir):
     """
     Save PSTH data as .npy files.
 
     Saves:
       - <condition>_psth.npy     : (N_neurons, N_bins) array of firing rates (Hz)
+      - <condition>_sem.npy      : (N_neurons, N_bins) array of standard error
       - <condition>_bins_ms.npy  : (N_bins+1,) array of bin edges in ms
       - <condition>_neuron_ids.npy : (N_neurons,) array of neuron IDs
     """
     rates = np.array([psth_dict[uid] for uid in neuron_ids])
+    sems = np.array([sem_dict[uid] for uid in neuron_ids])
     ids = np.array(neuron_ids)
 
     np.save(os.path.join(output_dir, f"{condition_name}_psth.npy"), rates)
+    np.save(os.path.join(output_dir, f"{condition_name}_sem.npy"), sems)
     np.save(os.path.join(output_dir, f"{condition_name}_bins_ms.npy"), bin_edges_ms)
     np.save(os.path.join(output_dir, f"{condition_name}_neuron_ids.npy"), ids)
     print(f"  Saved .npy files for {condition_name}  shape={rates.shape}")
@@ -185,7 +297,7 @@ def main():
         datasets[cond] = PickledDataStore(
             load=True,
             parameters=ParameterSet({
-                "root_directory": f"SelfSustainedPushPull_test:{cond}_12_____",
+                "root_directory": f"SelfSustainedPushPull_test:{cond}_____",
                 "store_stimuli": False,
             }),
             replace=False,
@@ -204,12 +316,14 @@ def main():
     # ── 3. Pick N random neurons (consistent across conditions) ───────
     # Use the first AA condition to discover all neuron IDs, then sample
     first_cond = AA_CONDITIONS[0]
-    all_segments = [seg for seg, _ in segment_cache[first_cond]]
-    all_ids = collect_neuron_ids(all_segments)
-    print(f"Total neurons found: {len(all_ids)}")
+    # all_segments = [seg for seg, _ in segment_cache[first_cond][0:2]]
+    # all_ids = collect_neuron_ids(all_segments)
+    # print(f"Total neurons found: {len(all_ids)}")
 
-    sampled_ids = sorted(random.sample(all_ids, min(N_NEURONS, len(all_ids))))
+    # sampled_ids = sorted(random.sample(all_ids, min(N_NEURONS, len(all_ids))))
+    sampled_ids = [85971, 63880, 72079, 68291, 64346, 75298, 67768, 62474, 95713, 82913, 97242, 91886, 86240, 71573, 80214, 84893, 91687, 63649, 83677, 98398]
     print(f"Sampled {len(sampled_ids)} neurons for PSTH")
+    print("Sampled neuron IDs:", sampled_ids)
 
     # Save the sampled neuron IDs once
     np.save(os.path.join(OUTPUT_DIR, "sampled_neuron_ids.npy"), np.array(sampled_ids))
@@ -226,15 +340,15 @@ def main():
         # Even segments (stimulus A presentation)
         even_segs = [seg for seg, _ in parsed[0::2]]
         print(f"  Even segments (A): {len(even_segs)} trials")
-        psth_even, bins = compute_psth(even_segs, sampled_ids, bin_size_ms=BIN_SIZE_MS)
-        save_psth_npy(psth_even, bins, sampled_ids, f"{cond}_even", OUTPUT_DIR)
+        psth_even, sem_even, bins = corrected_compute_psth(even_segs, sampled_ids, bin_size_ms=BIN_SIZE_MS)
+        save_psth_npy(psth_even, sem_even, bins, sampled_ids, f"{cond}_even", OUTPUT_DIR)
         plot_psth_grid(psth_even, bins, sampled_ids, f"{cond}_even", OUTPUT_DIR)
 
         # Odd segments (stimulus A' / repeat presentation)
         odd_segs = [seg for seg, _ in parsed[1::2]]
         print(f"  Odd segments (A'): {len(odd_segs)} trials")
-        psth_odd, bins = compute_psth(odd_segs, sampled_ids, bin_size_ms=BIN_SIZE_MS)
-        save_psth_npy(psth_odd, bins, sampled_ids, f"{cond}_odd", OUTPUT_DIR)
+        psth_odd, sem_odd, bins = corrected_compute_psth(odd_segs, sampled_ids, bin_size_ms=BIN_SIZE_MS)
+        save_psth_npy(psth_odd, sem_odd, bins, sampled_ids, f"{cond}_odd", OUTPUT_DIR)
         plot_psth_grid(psth_odd, bins, sampled_ids, f"{cond}_odd", OUTPUT_DIR)
 
     # ── 5. Compute & save PSTHs for AB conditions ─────────────────────
@@ -250,14 +364,14 @@ def main():
 
         print(f"  A-movie segments: {len(A_from_AB)} trials")
         if A_from_AB:
-            psth_a, bins = compute_psth(A_from_AB, sampled_ids, bin_size_ms=BIN_SIZE_MS)
-            save_psth_npy(psth_a, bins, sampled_ids, f"{cond}_A", OUTPUT_DIR)
+            psth_a, sem_a, bins = corrected_compute_psth(A_from_AB, sampled_ids, bin_size_ms=BIN_SIZE_MS)
+            save_psth_npy(psth_a, sem_a, bins, sampled_ids, f"{cond}_A", OUTPUT_DIR)
             plot_psth_grid(psth_a, bins, sampled_ids, f"{cond}_A", OUTPUT_DIR)
 
         print(f"  B-movie segments: {len(B_from_AB)} trials")
         if B_from_AB:
-            psth_b, bins = compute_psth(B_from_AB, sampled_ids, bin_size_ms=BIN_SIZE_MS)
-            save_psth_npy(psth_b, bins, sampled_ids, f"{cond}_B", OUTPUT_DIR)
+            psth_b, sem_b, bins = corrected_compute_psth(B_from_AB, sampled_ids, bin_size_ms=BIN_SIZE_MS)
+            save_psth_npy(psth_b, sem_b, bins, sampled_ids, f"{cond}_B", OUTPUT_DIR)
             plot_psth_grid(psth_b, bins, sampled_ids, f"{cond}_B", OUTPUT_DIR)
 
     print("\nDone! All PSTHs saved to:", OUTPUT_DIR)
