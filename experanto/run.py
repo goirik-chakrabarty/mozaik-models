@@ -13,7 +13,7 @@ from mozaik.storage.datastore import Hdf5DataStore, PickledDataStore
 from parameters import ParameterSet
 #from analysis_and_visualization import perform_analysis_and_visualization_spont
 from model import SelfSustainedPushPull
-from experiments import create_experiments_video
+from experiments import create_experiments_video, create_randomized_experanto
 import mozaik
 print(">>>>>>>>>>>>>>>>", mozaik.__file__)
 
@@ -31,7 +31,7 @@ nest.Install("stepcurrentmodule")
 
 if True:
     data_store, model = run_workflow(
-        'SelfSustainedPushPull', SelfSustainedPushPull, create_experiments_video)
+        'SelfSustainedPushPull', SelfSustainedPushPull, create_randomized_experanto)
     if False:
         model.connectors['V1AffConnectionOn'].store_connections(data_store)
         model.connectors['V1AffConnectionOff'].store_connections(data_store)
