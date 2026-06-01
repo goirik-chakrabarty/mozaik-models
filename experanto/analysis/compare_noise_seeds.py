@@ -1,13 +1,15 @@
 """Quick comparison of two trials with different noise_seed values.
 Loads one PixelMovieExperanto segment from each and compares spike trains.
 """
-import sys
-sys.path.insert(0, '/mnt/vast-nhr/projects/nix00014/goirik/MOZAIK-new/mozaik')
 
-from mozaik.storage.datastore import PickledDataStore
-from parameters import ParameterSet
-from mozaik.storage.queries import param_filter_query
+import sys
+
+sys.path.insert(0, "/mnt/vast-nhr/projects/nix00014/goirik/MOZAIK-new/mozaik")
+
 import numpy as np
+from mozaik.storage.datastore import PickledDataStore
+from mozaik.storage.queries import param_filter_query
+from parameters import ParameterSet
 
 paths = [
     "SelfSustainedPushPull_trial0_chunk0_____noise_seed:0",
@@ -24,7 +26,9 @@ for path in paths:
     )
 
     # Get PixelMovieExperanto segments from V1_Exc_L2/3
-    dsv = param_filter_query(ds, st_name="PixelMovieExperanto", sheet_name="V1_Exc_L2/3")
+    dsv = param_filter_query(
+        ds, st_name="PixelMovieExperanto", sheet_name="V1_Exc_L2/3"
+    )
     segs = dsv.get_segments()
     stims = dsv.get_stimuli()
     print(f"  PixelMovieExperanto segments (V1_Exc_L2/3): {len(segs)}")
@@ -47,7 +51,9 @@ for path in paths:
         print(f"    neuron {idx}: {count} spikes, times={times[:8]}...")
 
     # Also get InternalStimulus (blanks) to check those too
-    dsv_blank = param_filter_query(ds, st_name="InternalStimulus", sheet_name="V1_Exc_L2/3")
+    dsv_blank = param_filter_query(
+        ds, st_name="InternalStimulus", sheet_name="V1_Exc_L2/3"
+    )
     blank_segs = dsv_blank.get_segments()
     if blank_segs:
         blank_st = blank_segs[0].get_spiketrains()

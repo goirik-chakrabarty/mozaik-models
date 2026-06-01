@@ -223,3 +223,9 @@ __marimo__/
 */data*
 parameters/
 results/
+*.zip
+.DS_Store
+0_NOISE_SEED_EXPT/
+mozaik_data_*/
+old_runs/
+old_*/
