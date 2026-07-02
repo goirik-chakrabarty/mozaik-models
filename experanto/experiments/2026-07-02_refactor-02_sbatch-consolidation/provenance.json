@@ -1,0 +1,84 @@
+{
+  "schema": "provenance/v1",
+  "stamped_utc": "2026-07-02T20:54:40+00:00",
+  "run_dir": "/mnt/vast-nhr/projects/nix00014/goirik/MOZAIK-new/mozaik-models/experanto/experiments/2026-07-02_refactor-02_sbatch-consolidation",
+  "task": "REFACTOR-02 sbatch consolidation (config-driven launcher; behavior-preserving)",
+  "seed": null,
+  "config": null,
+  "launch_cmd": "capture_gate.py --mode {old,new}; gate PASS all 6 scenarios byte-identical",
+  "input_data": [],
+  "note": "12 launchers -> config+wrapper+run_job (6 experiments) + 5 legacy retired; run-psth left as-is. Golden docs/plan/audit/golden/P1_launch.json. P1 sanity GREEN.",
+  "reconstructed": false,
+  "commit_tuple": {
+    "git_repos": {
+      "mozaik": {
+        "present": true,
+        "sha": "fb85e2e58c8c0e9e99945eb04c2f3e62931cc152",
+        "sha_short": "fb85e2e",
+        "branch": "csng",
+        "describe": "fb85e2e",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "mozaik-models": {
+        "present": true,
+        "sha": "3131034dfef1b5b966f4d08e9f72c5c1aa55ec20",
+        "sha_short": "3131034",
+        "branch": "main",
+        "describe": "v1.1-27-g3131034",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "experanto": {
+        "present": true,
+        "sha": "327c3a0b4774852bc299ad74dbdf63de78082591",
+        "sha_short": "327c3a0",
+        "branch": "clean-spikeinterpolator",
+        "describe": "327c3a0",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "latent_space_model": {
+        "present": true,
+        "sha": "fe0551d1553d3d1411d53eeacc74e30ca9f55d15",
+        "sha_short": "fe0551d",
+        "branch": "synthetic",
+        "describe": "fe0551d",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "mei": {
+        "present": true,
+        "sha": "ab9cc647d057de0dd50ccdce0f0c585ac0a4f7c9",
+        "sha_short": "ab9cc64",
+        "branch": "master",
+        "describe": "v0.1.0-7-gab9cc64",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "neuralpredictors": {
+        "present": true,
+        "sha": "12bf6e2a68b0a7cf550b29c577e3ada466d613a6",
+        "sha_short": "12bf6e2",
+        "branch": "latent_space_model",
+        "describe": "v0.3.0.pre-216-g12bf6e2",
+        "dirty": false,
+        "dirty_file_count": 0
+      }
+    },
+    "loose_dirs": {
+      "subset_stimuli": {
+        "present": true,
+        "scripts_md5": "dadea0b1403eaaba7bb7e4ca23a12853",
+        "n_files": 10
+      },
+      "generalization-exp": {
+        "present": true,
+        "scripts_md5": "5959745eb069f0fde40ec585391f44b9",
+        "n_files": 16
+      }
+    }
+  },
+  "pin_valid": true,
+  "dirty_repos": []
+}

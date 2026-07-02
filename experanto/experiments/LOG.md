@@ -5,6 +5,40 @@ Newest at top. Superseded blocks are annotated, never deleted. Template: `docs/R
 
 ---
 
+## 2026-07-02 — REFACTOR-02: consolidate `run-*.sbatch` into a config-driven launcher 🟢 PASS — behavior-preserving, committed
+- **Goal:** Remove the `mozaik/cluster/` launcher duplication (test33 §6). Reading the 12 `run-*.sbatch`
+  showed 7 live in 3 families (sim/export/psth) sharing ~30 lines of boilerplate + 5 legacy (4 launch
+  interactive `jupyter lab` via the old `compose.sh`; 1 non-apptainer pyenv). Plan:
+  `docs/plan/PLAN_REFACTOR_sbatch_consolidation.md`.
+- **Change (mozaik `csng`):** 6 live sim/export launchers → `cluster/experiments/{sim,export}-{prod,test3,test33}.conf`
+  (human-readable, single source of truth) + `cluster/submit.sh` (conf → `sbatch` directives) +
+  `cluster/run_job.sh` (bodiless; sources conf → `compose-{array,export}.sh`) + `cluster/README.md`.
+  5 legacy → `cluster/legacy/`. `run-psth-datastore.sbatch` left as-is.
+- **Commit-tuple (clean, pin_valid=True):** mozaik **`fb85e2e`** (csng); mozaik-models `3131034`; experanto
+  `327c3a0`; container `mozaik-opt.sif`.
+- **Pre-registered stop condition (NOT moved):** behavior-preserving ⇒ succeeds only if, for every one of
+  the 6 live scenarios, the new launcher reproduces the old exactly on (A) effective `#SBATCH` directives
+  and (B) the composed `apptainer exec` argv. Any diff ⇒ REVERT.
+- **Gate:** `cluster/_gate/capture_gate.py` captures both axes via a **stub apptainer (bash function** — wins
+  over the module-loaded PATH; never runs the real pipeline). Baseline golden captured from the OLD
+  launchers → `docs/plan/audit/golden/P1_launch.json` (deterministic: re-capture identical). New
+  config+wrapper vs golden: **all 6 byte-identical** (`sim/export × prod/test3/test33`). P1 export golden
+  (`run_all.sh P1`) GREEN (unaffected).
+- **Preserved quirks (not fixed here):** `sim-prod` ARRAY=0-23 (nominal 20×12 would be 0-239); `export-test33`
+  omits `DATASTORE_PREFIX` where `export-test3` sets it — both reproduced verbatim, logged as follow-ups.
+- **Incident (honest):** the first gate harness used a PATH-based apptainer stub; because `module load
+  apptainer` (the alloc pre-loads apptainer; launchers reload it) re-prepends the real binary, the real sim
+  actually ran and its runner's `rm -rf "$DIR_NAME"` **destroyed the reusable `trial1` scratch datastore**
+  (REFACTOR-01 result unaffected — committed; trial0/trial2 intact; `1_TEST3_EXPT` reference untouched).
+  Fixed by stubbing apptainer as an exported bash function (beats PATH) + a parent+child guard that aborts
+  unless the stub provably wins. trial1 can be regenerated from the held alloc if needed.
+- **Result / decision:** 🟢 PASS → committed. REFACTOR-02 exit criteria met.
+- **Run dir:** `experiments/2026-07-02_refactor-02_sbatch-consolidation/` (provenance.json, pin_valid=True).
+- **Artifacts:** `mozaik/cluster/_gate/capture_gate.py`; golden `docs/plan/audit/golden/P1_launch.json`;
+  plan `PLAN_REFACTOR_sbatch_consolidation.md`; `mozaik/cluster/README.md`.
+
+---
+
 ## 2026-07-02 — REFACTOR-01: post-blank 49 ms → `POST_BLANK_MS` constant 🟢 PASS — behavior-preserving, committed
 - **Goal:** Remove the 49 ms post-blank magic number (≥4 bare literals across sim + export) by
   extracting named constants, and document the sim↔export timeline invariant that keeps them equal.
