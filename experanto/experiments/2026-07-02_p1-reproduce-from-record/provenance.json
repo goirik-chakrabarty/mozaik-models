@@ -1,0 +1,97 @@
+{
+  "schema": "provenance/v1",
+  "stamped_utc": "2026-07-02T13:36:47+00:00",
+  "run_dir": "/mnt/vast-nhr/projects/nix00014/goirik/MOZAIK-new/mozaik-models/experanto/experiments/2026-07-02_p1-reproduce-from-record",
+  "task": "P1 reproduce-from-record gate (Week-2 gate #3)",
+  "seed": null,
+  "config": "mozaik-models/experanto/experiments/2026-07-02_p1-reproduction_test3/config.json",
+  "launch_cmd": null,
+  "input_data": [],
+  "note": "Re-executed the recorded P1 reproduction from the record alone; 3/3 trials match metrics.json (gate PASS).",
+  "reconstructed": false,
+  "commit_tuple": {
+    "git_repos": {
+      "mozaik": {
+        "present": true,
+        "sha": "005de9bbfe391e68e7016e0e66375eeccc4d9fab",
+        "sha_short": "005de9b",
+        "branch": "csng",
+        "describe": "005de9b",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "mozaik-models": {
+        "present": true,
+        "sha": "dc2857939afe72b6a72c7f8320ca3ac067fd88a1",
+        "sha_short": "dc28579",
+        "branch": "main",
+        "describe": "v1.1-21-gdc28579",
+        "dirty": true,
+        "dirty_file_count": 1
+      },
+      "experanto": {
+        "present": true,
+        "sha": "327c3a0b4774852bc299ad74dbdf63de78082591",
+        "sha_short": "327c3a0",
+        "branch": "clean-spikeinterpolator",
+        "describe": "327c3a0",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "latent_space_model": {
+        "present": true,
+        "sha": "f2d3ca725824b6e61552b053aaf433c3b096bbe3",
+        "sha_short": "f2d3ca7",
+        "branch": "synthetic",
+        "describe": "f2d3ca7",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "mei": {
+        "present": true,
+        "sha": "ab9cc647d057de0dd50ccdce0f0c585ac0a4f7c9",
+        "sha_short": "ab9cc64",
+        "branch": "master",
+        "describe": "v0.1.0-7-gab9cc64",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "neuralpredictors": {
+        "present": true,
+        "sha": "985ea8cffacb75ebaa193e50fcdb569ca89421ae",
+        "sha_short": "985ea8c",
+        "branch": "main",
+        "describe": "v0.3.0.pre-215-g985ea8c-dirty",
+        "dirty": true,
+        "dirty_file_count": 2
+      },
+      "sensorium": {
+        "present": true,
+        "sha": "c433fed25f234724fd9adf0cef3c260a2068b1fa",
+        "sha_short": "c433fed",
+        "branch": "main",
+        "describe": "c433fed-dirty",
+        "dirty": true,
+        "dirty_file_count": 9
+      }
+    },
+    "loose_dirs": {
+      "subset_stimuli": {
+        "present": true,
+        "scripts_md5": "dadea0b1403eaaba7bb7e4ca23a12853",
+        "n_files": 10
+      },
+      "generalization-exp": {
+        "present": true,
+        "scripts_md5": "5959745eb069f0fde40ec585391f44b9",
+        "n_files": 16
+      }
+    }
+  },
+  "pin_valid": false,
+  "dirty_repos": [
+    "mozaik-models",
+    "neuralpredictors",
+    "sensorium"
+  ]
+}
