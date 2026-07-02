@@ -5,6 +5,40 @@ Newest at top. Superseded blocks are annotated, never deleted. Template: `docs/R
 
 ---
 
+## 2026-07-02 — REFACTOR-01: post-blank 49 ms → `POST_BLANK_MS` constant 🟢 PASS — behavior-preserving, committed
+- **Goal:** Remove the 49 ms post-blank magic number (≥4 bare literals across sim + export) by
+  extracting named constants, and document the sim↔export timeline invariant that keeps them equal.
+  Plan: `docs/plan/PLAN_REFACTOR_postblank_constant.md`.
+- **Change:** `mozaik/experiments/vision.py` — `POST_BLANK_MS = 49` (int) replaces the two `49`
+  literals in `RandomizedExperanto`'s `InternalStimulus`. `mozaik-models/experanto/mozaik2experanto.py`
+  — `POST_BLANK_MS = 49.0` (float) replaces the three `49.0` literals in `MozaikScreenExporter`. Both
+  carry a comment stating the sim↔export invariant.
+- **Commit-tuple (P1 repos clean, pin_valid=True):** mozaik `30ff0e3` (csng), mozaik-models `1bf8648`
+  (main), experanto `327c3a0` (clean-spikeinterpolator); container `mozaik-opt.sif` (2026-02-09).
+  (The vendored top-level `sensorium/` — previously the only dirty tree — was deleted this session;
+  the P2/P3 copy `latent_space_model/sensorium` remains. sensorium is not a P1 dep.)
+- **Pre-registered stop condition (NOT moved):** behavior-preserving ⇒ succeeds only if the re-run is
+  bit-identical; any difference ⇒ REVERT (a typo broke value-preservation).
+- **Verification — BOTH gates GREEN:**
+  - **Sim:** fresh on-node test3 re-sim (alloc `14603006`/`c0065`, mpirun -n 12) with the refactored
+    `mozaik` → `verify_p1_reproduction.py` vs `1_TEST3_EXPT` = **42/42 segments identical × 3 trials**;
+    datastore spikes 10,333,593 / 10,349,230 / 10,385,555 == ref.
+  - **Export:** re-export of the fresh datastores with the refactored `mozaik2experanto.py` to a fresh
+    prefix (`mozaik_data_test3_REFACTOR_VERIFY`, non-destructive) → `capture_p1_export.py` fingerprint =
+    **all 3 trials `spikes_sha256` MATCH `docs/plan/audit/golden/P1.json`** (n_spikes 1,480,099 /
+    1,496,296 / 1,491,426; entry_modalities MATCH; every gate check passes). `IDENTICAL_ALL_PASS`.
+    This also closes the prior reproduction entry's caveat that export-hash equality was "inferred,
+    not executed" — it is now executed on refactored-code output.
+- **Companion (noise_seed correctness, requested):** `verify_noise_seed_trials.py` on the same fresh
+  datastores, trial0(ns=0) vs trial1(ns=1000): connectivity PASS (param hash minus noise_seed identical,
+  `bb08d8fb8af5`); noise-varies PASS (**42/42 segments differ**). Confirms identical network + fully
+  decorrelated per-trial noise.
+- **Result / decision:** 🟢 PASS both gates → committed per repo (mozaik `30ff0e3`, mozaik-models
+  `1bf8648`). REFACTOR-01 exit criteria met; invariant documented in both constants' comments.
+- **Run dir:** `experiments/2026-07-02_refactor-01_postblank-constant/` (provenance.json, pin_valid=True).
+- **Artifacts:** `analysis/verify_p1_reproduction.py`; `analysis/verify_noise_seed_trials.py`;
+  `docs/plan/audit/golden/capture_p1_export.py` + `P1.json`; plan `PLAN_REFACTOR_postblank_constant.md`.
+
 ## 2026-07-02 — P1 reproduce-from-record gate (Week-2 gate #3) 🟢 PASS — record alone reproduces the metric
 - **Goal:** Prove the ledger works — re-execute the P1 reproduction result using *only* the logged
   record (commit-tuple + config + command + data paths), and match the recorded metric. This is the

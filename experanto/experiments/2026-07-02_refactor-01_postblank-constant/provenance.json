@@ -1,0 +1,90 @@
+{
+  "schema": "provenance/v1",
+  "stamped_utc": "2026-07-02T20:04:06+00:00",
+  "run_dir": "/mnt/vast-nhr/projects/nix00014/goirik/MOZAIK-new/mozaik-models/experanto/experiments/2026-07-02_refactor-01_postblank-constant",
+  "task": "REFACTOR-01 post-blank constant (behavior-preserving refactor verification)",
+  "seed": "mozaik_seed=1023,pynn_seed=5,noise_seed=trial*1000",
+  "config": null,
+  "launch_cmd": "verify_p1_reproduction.py --n-trials 3 (sim) + export.py 0 1 2 --n-chunks 1 then capture_p1_export.py (export)",
+  "input_data": [
+    "/mnt/vast-react/projects/neural_foundation_model/mozaik_data_test3_REFACTOR_VERIFY"
+  ],
+  "note": "Both pre-registered gates GREEN: sim 42/42x3 IDENTICAL to 1_TEST3_EXPT; export spikes_sha256 all 3 == golden/P1.json. sensorium repo deleted by user this session.",
+  "reconstructed": false,
+  "commit_tuple": {
+    "git_repos": {
+      "mozaik": {
+        "present": true,
+        "sha": "30ff0e3798dcf82cd8b9c7e2224f6d63febce1a3",
+        "sha_short": "30ff0e3",
+        "branch": "csng",
+        "describe": "30ff0e3",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "mozaik-models": {
+        "present": true,
+        "sha": "1bf8648ada5135069afdf75b5a1130d6e403a2a3",
+        "sha_short": "1bf8648",
+        "branch": "main",
+        "describe": "v1.1-26-g1bf8648",
+        "dirty": false,
+        "dirty_file_count": 0,
+        "dirty_excludes_run_dir_files": 1
+      },
+      "experanto": {
+        "present": true,
+        "sha": "327c3a0b4774852bc299ad74dbdf63de78082591",
+        "sha_short": "327c3a0",
+        "branch": "clean-spikeinterpolator",
+        "describe": "327c3a0",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "latent_space_model": {
+        "present": true,
+        "sha": "fe0551d1553d3d1411d53eeacc74e30ca9f55d15",
+        "sha_short": "fe0551d",
+        "branch": "synthetic",
+        "describe": "fe0551d",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "mei": {
+        "present": true,
+        "sha": "ab9cc647d057de0dd50ccdce0f0c585ac0a4f7c9",
+        "sha_short": "ab9cc64",
+        "branch": "master",
+        "describe": "v0.1.0-7-gab9cc64",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "neuralpredictors": {
+        "present": true,
+        "sha": "12bf6e2a68b0a7cf550b29c577e3ada466d613a6",
+        "sha_short": "12bf6e2",
+        "branch": "latent_space_model",
+        "describe": "v0.3.0.pre-216-g12bf6e2",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "sensorium": {
+        "present": false
+      }
+    },
+    "loose_dirs": {
+      "subset_stimuli": {
+        "present": true,
+        "scripts_md5": "dadea0b1403eaaba7bb7e4ca23a12853",
+        "n_files": 10
+      },
+      "generalization-exp": {
+        "present": true,
+        "scripts_md5": "5959745eb069f0fde40ec585391f44b9",
+        "n_files": 16
+      }
+    }
+  },
+  "pin_valid": true,
+  "dirty_repos": []
+}
