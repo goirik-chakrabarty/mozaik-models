@@ -51,3 +51,18 @@ Newest at top. Superseded blocks are annotated, never deleted. Template: `docs/R
 - **Run dir:** `experiments/2026-07-02_p1-reproduction_test3/`
 - **Artifacts:** reproducer `analysis/verify_p1_reproduction.py`; golden `docs/plan/audit/golden/P1_reproduction.json`;
   gate golden `docs/plan/audit/golden/P1.json` + `capture_p1_export.py`.
+
+## 2026-06-02 — P1 test3 simulation + Experanto export (BACKFILLED / reconstructed) 🟢 output on disk
+- **Goal:** the original test3 sim→export whose shard is the basis of the P1 gate golden. Backfilled
+  from on-disk artifacts (no live LOG existed yet) — reconstructed, not an authoritative logged run.
+- **Commit-tuple (reconstructed, pre-Week-0 dirty baseline):** mozaik `e836c42`-dirty ·
+  mozaik-models `04f2951`-dirty · experanto `2d1fdee`-dirty (see `docs/plan/audit/baseline-commits.md`).
+  ⚠️ pins under-specified (trees were dirty at run time).
+- **Config / seed:** test3 = 3 stimuli × 3 trials; mozaik_seed=1023, pynn_seed=5, noise_seed=trial*1000.
+- **Data:** datastores `1_TEST3_EXPT/` → export `/mnt/vast-react/projects/neural_foundation_model/mozaik_data_test3/trial{0,1,2}`.
+- **Metrics (from `docs/plan/audit/golden/P1.json`):** per-trial exported n_spikes 1,480,099 / 1,496,296 /
+  1,491,426; spikes_sha256 e06b79dc… / e823f6ad… / 1bd89176…; end_time 12.446 s; all export-fidelity checks pass.
+- **Result / decision:** 🟢 the frozen reference export; all P1 gate checks green and reproducible.
+- **Caveats / honesty:** reconstructed row — provenance rebuilt after the fact; commit-tuple was dirty.
+- **Run dir:** n/a (predates run-dir convention); reference output at the mozaik_data_test3 path above.
+- **Artifacts:** `docs/plan/audit/golden/P1.json`, `capture_p1_export.py`.
