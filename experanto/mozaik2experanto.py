@@ -9,6 +9,11 @@ import psutil
 import yaml
 from scipy.ndimage import gaussian_filter1d
 
+# Post-blank duration (ms) appended after each image, mirroring the simulation's RandomizedExperanto
+# experiment. MUST equal the post-blank in mozaik/experiments/vision.py (InternalStimulus); the spike
+# and screen timelines are aligned exactly, so a drift here desyncs them. Single source on this side.
+POST_BLANK_MS = 49.0
+
 
 def load_tier_reference(combined_meta_path):
     """Build a condition_hash → tier mapping from an existing combined_meta.json.
@@ -522,7 +527,7 @@ class MozaikScreenExporter:
             elif modality == "image":
                 pre_blank_ms = fd * ((src_meta["pre_blank_period"] * 1000) // fd)
                 presentation_ms = fd * ((src_meta["presentation_time"] * 1000) // fd)
-                post_blank_ms = 49.0  # hardcoded in RandomizedExperanto
+                post_blank_ms = POST_BLANK_MS  # mirrors RandomizedExperanto (see constant at top)
 
                 # --- Pre-blank entry ---
                 out_key = f"{output_idx:05d}"
@@ -635,7 +640,7 @@ class MozaikScreenExporter:
         elif modality == "image":
             pre_blank_ms = fd * ((src_meta["pre_blank_period"] * 1000) // fd)
             presentation_ms = fd * ((src_meta["presentation_time"] * 1000) // fd)
-            post_blank_ms = 49.0  # hardcoded in RandomizedExperanto
+            post_blank_ms = POST_BLANK_MS  # mirrors RandomizedExperanto (see constant at top)
             return pre_blank_ms + presentation_ms + post_blank_ms
         else:  # blank
             return fd
@@ -685,9 +690,9 @@ class MozaikScreenExporter:
             last_ts += presentation_ms
             frames_added += 1
 
-            # Post-blank frame (hardcoded 49ms in RandomizedExperanto)
+            # Post-blank frame (mirrors RandomizedExperanto; see POST_BLANK_MS at top)
             timestamps_ms.append(last_ts)
-            last_ts += 49.0
+            last_ts += POST_BLANK_MS
             frames_added += 1
 
         elif modality == "blank":
