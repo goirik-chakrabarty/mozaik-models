@@ -1,6 +1,6 @@
 {
   "schema": "provenance/v1",
-  "stamped_utc": "2026-07-02T13:36:47+00:00",
+  "stamped_utc": "2026-07-02T13:40:43+00:00",
   "run_dir": "/mnt/vast-nhr/projects/nix00014/goirik/MOZAIK-new/mozaik-models/experanto/experiments/2026-07-02_p1-reproduce-from-record",
   "task": "P1 reproduce-from-record gate (Week-2 gate #3)",
   "seed": null,
@@ -22,12 +22,12 @@
       },
       "mozaik-models": {
         "present": true,
-        "sha": "dc2857939afe72b6a72c7f8320ca3ac067fd88a1",
-        "sha_short": "dc28579",
+        "sha": "172478d1d68ccb82e9a1063d8efb92731a1a3860",
+        "sha_short": "172478d",
         "branch": "main",
-        "describe": "v1.1-21-gdc28579",
-        "dirty": true,
-        "dirty_file_count": 1
+        "describe": "v1.1-22-g172478d",
+        "dirty": false,
+        "dirty_file_count": 0
       },
       "experanto": {
         "present": true,
@@ -90,7 +90,6 @@
   },
   "pin_valid": false,
   "dirty_repos": [
-    "mozaik-models",
     "neuralpredictors",
     "sensorium"
   ]
