@@ -5,6 +5,23 @@ Newest at top. Superseded blocks are annotated, never deleted. Template: `docs/R
 
 ---
 
+## 2026-07-02 — P1 reproduce-from-record gate (Week-2 gate #3) 🟢 PASS — record alone reproduces the metric
+- **Goal:** Prove the ledger works — re-execute the P1 reproduction result using *only* the logged
+  record (commit-tuple + config + command + data paths), and match the recorded metric. This is the
+  decisive Week-2 sanity gate (`docs/plan/week-2-ledger.md` gate #3).
+- **Commit-tuple (now valid for P1):** mozaik `005de9b`, mozaik-models `25809dd`, experanto `327c3a0`
+  (all clean, committed this session); container `mozaik-opt.sif` (2026-02-09). Vendored
+  neuralpredictors/sensorium still dirty but not P1 deps.
+- **Method:** ran the command recorded in the prior run's `config.json`, output redirected to a fresh
+  gate dir (record untouched), then diffed against the recorded `metrics.json`.
+- **Result:** 🟢 PASS. trial0/1/2 = 42/42 segments identical, spikes 10,333,593 / 10,349,230 /
+  10,385,555 — exact match to the record. The record is self-sufficient to reproduce the result.
+- **Caveats:** the reproduced verify re-reads the same on-disk datastores, so this validates the
+  *ledger→metric* loop and P1's now-clean pins; the fresh-simulation reproduction was separately
+  proven (14602650 vs 1_TEST3_EXPT, entry below).
+- **Run dir:** `experiments/2026-07-02_p1-reproduce-from-record/` (provenance.json, result.json, run.log)
+- **Artifacts:** `analysis/verify_p1_reproduction.py`; `scripts/stamp_run.py` (overlay).
+
 ## 2026-07-02 — P1 reproduction (test3, same-seed determinism) 🟢 PASS — simulation is bit-reproducible
 - **Goal:** Prove the MOZAIK simulation is bit-reproducible under fixed seeds — the Week-0 P1
   *reproduction* golden the handoff left blocked (`docs/plan/week-0-preflight.md`). Establishes the

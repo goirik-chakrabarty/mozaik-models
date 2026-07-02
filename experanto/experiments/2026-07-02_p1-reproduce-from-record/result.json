@@ -1,0 +1,44 @@
+{
+  "pipeline": "P1",
+  "what": "MOZAIK simulation reproduction \u2014 fresh re-sim vs reference datastore (spike-train level)",
+  "fresh_base": "/project",
+  "ref_base": "/project/1_TEST3_EXPT",
+  "n_trials": 3,
+  "trials": {
+    "trial0": {
+      "n_seg_fresh": 42,
+      "n_seg_ref": 42,
+      "seg_set_equal": true,
+      "seg_identical": 42,
+      "seg_differ": 0,
+      "differing_segments": [],
+      "total_spikes_fresh": 10333593,
+      "total_spikes_ref": 10333593,
+      "all_identical": true
+    },
+    "trial1": {
+      "n_seg_fresh": 42,
+      "n_seg_ref": 42,
+      "seg_set_equal": true,
+      "seg_identical": 42,
+      "seg_differ": 0,
+      "differing_segments": [],
+      "total_spikes_fresh": 10349230,
+      "total_spikes_ref": 10349230,
+      "all_identical": true
+    },
+    "trial2": {
+      "n_seg_fresh": 42,
+      "n_seg_ref": 42,
+      "seg_set_equal": true,
+      "seg_identical": 42,
+      "seg_differ": 0,
+      "differing_segments": [],
+      "total_spikes_fresh": 10385555,
+      "total_spikes_ref": 10385555,
+      "all_identical": true
+    }
+  },
+  "all_identical": true,
+  "verdict": "PASS \u2014 simulation is bit-reproducible under fixed seeds"
+}
