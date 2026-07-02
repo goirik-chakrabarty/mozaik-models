@@ -1,0 +1,9 @@
+P1 reproduction verify (datastore spike-train level)
+  fresh: /project
+  ref  : /project/1_TEST3_EXPT
+
+trial0 (noise_seed=0): IDENTICAL | segments 42/42 identical | spikes fresh=10333593 ref=10333593
+trial1 (noise_seed=1000): IDENTICAL | segments 42/42 identical | spikes fresh=10349230 ref=10349230
+trial2 (noise_seed=2000): IDENTICAL | segments 42/42 identical | spikes fresh=10385555 ref=10385555
+
+VERDICT: PASS — simulation is bit-reproducible under fixed seeds

@@ -229,3 +229,9 @@ results/
 mozaik_data_*/
 old_runs/
 old_*/
+# simulation-output data dirs (never commit ~GB datastores)
+*_TEST3_EXPT/
+1_TEST3_EXPT/
+# stray editor/duplicate files
+*copy.py
+* copy.*

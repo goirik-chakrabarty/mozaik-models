@@ -1,0 +1,102 @@
+{
+  "schema": "provenance/v1",
+  "stamped_utc": "2026-07-02T13:04:16+00:00",
+  "run_dir": "/mnt/vast-nhr/projects/nix00014/goirik/MOZAIK-new/mozaik-models/experanto/experiments/2026-07-02_p1-reproduction_test3",
+  "task": "P1 reproduction verify (test3, same-seed determinism)",
+  "seed": "mozaik=1023,pynn=5,noise=trial*1000",
+  "config": "mozaik-models/experanto/experiments/2026-07-02_p1-reproduction_test3/config.json",
+  "launch_cmd": "apptainer exec ... verify_p1_reproduction.py --fresh-base /project --ref-base /project/1_TEST3_EXPT --n-trials 3",
+  "input_data": [
+    "/project (fresh SLURM 14602650 datastores)",
+    "/project/1_TEST3_EXPT (reference)"
+  ],
+  "note": "Fresh re-sim == reference, 42/42 segments identical across 3 trials. See LOG.md 2026-07-02.",
+  "reconstructed": true,
+  "commit_tuple": {
+    "git_repos": {
+      "mozaik": {
+        "present": true,
+        "sha": "e836c423fa5883e5cd36c277d3b13f2bdb62a21d",
+        "sha_short": "e836c42",
+        "branch": "csng",
+        "describe": "e836c42-dirty",
+        "dirty": true,
+        "dirty_file_count": 6
+      },
+      "mozaik-models": {
+        "present": true,
+        "sha": "04f29512200529d123f6c7c9dc7608ac69e16828",
+        "sha_short": "04f2951",
+        "branch": "main",
+        "describe": "v1.1-19-g04f2951-dirty",
+        "dirty": true,
+        "dirty_file_count": 10
+      },
+      "experanto": {
+        "present": true,
+        "sha": "2d1fdeec01eed1cbcd1274c02e78c6ee894158aa",
+        "sha_short": "2d1fdee",
+        "branch": "clean-spikeinterpolator",
+        "describe": "2d1fdee-dirty",
+        "dirty": true,
+        "dirty_file_count": 3
+      },
+      "latent_space_model": {
+        "present": true,
+        "sha": "f2d3ca725824b6e61552b053aaf433c3b096bbe3",
+        "sha_short": "f2d3ca7",
+        "branch": "synthetic",
+        "describe": "f2d3ca7",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "mei": {
+        "present": true,
+        "sha": "ab9cc647d057de0dd50ccdce0f0c585ac0a4f7c9",
+        "sha_short": "ab9cc64",
+        "branch": "master",
+        "describe": "v0.1.0-7-gab9cc64",
+        "dirty": false,
+        "dirty_file_count": 0
+      },
+      "neuralpredictors": {
+        "present": true,
+        "sha": "985ea8cffacb75ebaa193e50fcdb569ca89421ae",
+        "sha_short": "985ea8c",
+        "branch": "main",
+        "describe": "v0.3.0.pre-215-g985ea8c-dirty",
+        "dirty": true,
+        "dirty_file_count": 2
+      },
+      "sensorium": {
+        "present": true,
+        "sha": "c433fed25f234724fd9adf0cef3c260a2068b1fa",
+        "sha_short": "c433fed",
+        "branch": "main",
+        "describe": "c433fed-dirty",
+        "dirty": true,
+        "dirty_file_count": 9
+      }
+    },
+    "loose_dirs": {
+      "subset_stimuli": {
+        "present": true,
+        "scripts_md5": "dadea0b1403eaaba7bb7e4ca23a12853",
+        "n_files": 10
+      },
+      "generalization-exp": {
+        "present": true,
+        "scripts_md5": "5959745eb069f0fde40ec585391f44b9",
+        "n_files": 16
+      }
+    }
+  },
+  "pin_valid": false,
+  "dirty_repos": [
+    "mozaik",
+    "mozaik-models",
+    "experanto",
+    "neuralpredictors",
+    "sensorium"
+  ]
+}

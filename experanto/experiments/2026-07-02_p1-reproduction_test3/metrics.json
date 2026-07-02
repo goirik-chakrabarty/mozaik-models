@@ -1,0 +1,9 @@
+{
+  "all_identical": true,
+  "verdict": "PASS",
+  "trials": {
+    "trial0": {"noise_seed": 0, "segments_identical": "42/42", "spikes_fresh": 10333593, "spikes_ref": 10333593},
+    "trial1": {"noise_seed": 1000, "segments_identical": "42/42", "spikes_fresh": 10349230, "spikes_ref": 10349230},
+    "trial2": {"noise_seed": 2000, "segments_identical": "42/42", "spikes_fresh": 10385555, "spikes_ref": 10385555}
+  }
+}

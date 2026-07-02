@@ -123,6 +123,7 @@ chunk_dir = os.environ.get("CHUNK_DIR", "/data/mozaik_chunk")
 output_prefix = os.environ.get(
     "OUTPUT_PREFIX", "/data/mozaik_data_dynamic26872-17-20-Video-mozaik-trial"
 )
+datastore_prefix = os.environ.get("DATASTORE_PREFIX", "")
 
 # Load tier reference mapping if provided
 tier_reference = None
@@ -173,9 +174,9 @@ for trial in tqdm(args.trials):
 
     for i, chunk in enumerate(tqdm(chunks_to_load)):
         if noise_seed is not None:
-            path = f"SelfSustainedPushPull_trial{trial}_chunk{chunk}_____noise_seed:{noise_seed}"
+            path = os.path.join(datastore_prefix, f"SelfSustainedPushPull_trial{trial}_chunk{chunk}_____noise_seed:{noise_seed}")
         else:
-            path = f"SelfSustainedPushPull_trial{trial}_chunk{chunk}_____"
+            path = os.path.join(datastore_prefix, f"SelfSustainedPushPull_trial{trial}_chunk{chunk}_____")
 
         # Load DataStore
         data_store = PickledDataStore(

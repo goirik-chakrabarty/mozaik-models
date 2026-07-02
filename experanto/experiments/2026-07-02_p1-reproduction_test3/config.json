@@ -1,0 +1,12 @@
+{
+  "task": "P1 reproduction verify (datastore spike-train level)",
+  "slurm_job": "14602650",
+  "fresh_base": "/project (mozaik-models/experanto root)",
+  "ref_base": "/project/1_TEST3_EXPT",
+  "n_trials": 3,
+  "noise_step": 1000,
+  "seeds": {"mozaik_seed": 1023, "pynn_seed": 5, "noise_seed": "trial*1000"},
+  "container": "mozaik-sif/mozaik-opt.sif (2026-02-09)",
+  "commit_tuple": {"mozaik": "e836c42", "mozaik-models": "04f2951", "experanto": "2d1fdee"},
+  "reproduce": "apptainer exec --cleanenv --env PYTHONPATH=/mozaik --bind $PWD:/mozaik --bind $PWD/../mozaik-models/experanto:/project mozaik-sif/mozaik-opt.sif python -u /project/analysis/verify_p1_reproduction.py --fresh-base /project --ref-base /project/1_TEST3_EXPT --n-trials 3 --json /project/experiments/2026-07-02_p1-reproduction_test3/metrics.json"
+}

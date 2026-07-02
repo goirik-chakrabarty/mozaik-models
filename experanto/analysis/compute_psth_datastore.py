@@ -28,7 +28,7 @@ from parameters import ParameterSet
 from tqdm import tqdm
 
 # ── Configuration ────────────────────────────────────────────────────────
-N_TRIALS = 51
+N_TRIALS = int(os.environ.get("N_TRIALS", "51"))  # override to match the Experanto notebook's trial count (avoids the 51-vs-50 PSTH discrepancy)
 BIN_SIZE_MS = 10
 PRE_STIM_MS = 100
 POST_STIM_MS = 100
