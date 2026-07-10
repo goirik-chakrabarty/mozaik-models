@@ -73,6 +73,7 @@ def _tier_a(e):
         "spikes_within_0_end": bool((spikes.size == 0) or (spikes.min() >= 0 and spikes.max() <= end + 1e-6)),
         "n_signals_expected": e["n_signals"] == N_SIGNALS_EXPECTED,
     }
+    c = {k: bool(v) for k, v in c.items()}  # cast numpy bools -> python bool (JSON-serializable)
     return all(c.values()), c
 
 
