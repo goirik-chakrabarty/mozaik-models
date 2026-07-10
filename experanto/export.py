@@ -166,22 +166,20 @@ for trial in tqdm(args.trials):
     else:
         chunks_to_load = range(chunk_start, chunk_end)
 
-    # Read the LGN step-current noise seed from first chunk JSON to construct the datastore dir name.
-    # The sim appends the modified-parameter key to the dir, so the key is now
-    # lgn_stepcurrentsource_noise_seed (renamed from noise_seed; see mozaik commit 9b0d489).
-    # Accept the legacy `noise_seed` manifest field too, so pre-rename chunk manifests still work.
-    first_chunk_path = f"{chunk_dir}/{trial}_{chunk_start}.json"
-    with open(first_chunk_path) as f:
-        chunk_meta = json.load(f)
-    noise_seed = chunk_meta[0].get(
-        "lgn_stepcurrentsource_noise_seed", chunk_meta[0].get("noise_seed", None)
-    )
+    # Build the datastore dir name exactly as the sim did, via mozaik's own result_directory_name.
+    # The seed value matches the runner's formula (trial*1000 + chunk). Using mozaik's function keeps
+    # us correct through its key truncation+hash (lgn_stepcurrentsource_noise_seed > 24 chars becomes
+    # lgn_stepcurre_<sha1>) — reconstructing the string by hand would silently mismatch.
+    from mozaik.tools.misc import result_directory_name
 
     for i, chunk in enumerate(tqdm(chunks_to_load)):
-        if noise_seed is not None:
-            path = os.path.join(datastore_prefix, f"SelfSustainedPushPull_trial{trial}_chunk{chunk}_____lgn_stepcurrentsource_noise_seed:{noise_seed}")
-        else:
-            path = os.path.join(datastore_prefix, f"SelfSustainedPushPull_trial{trial}_chunk{chunk}_____")
+        seed = trial * 1000 + chunk
+        ddir = result_directory_name(
+            f"trial{trial}_chunk{chunk}",
+            "SelfSustainedPushPull",
+            {"lgn_stepcurrentsource_noise_seed": seed},
+        )
+        path = os.path.join(datastore_prefix, ddir)
 
         # Load DataStore
         data_store = PickledDataStore(
