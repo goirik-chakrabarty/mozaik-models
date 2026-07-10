@@ -166,15 +166,20 @@ for trial in tqdm(args.trials):
     else:
         chunks_to_load = range(chunk_start, chunk_end)
 
-    # Read noise_seed from first chunk JSON to construct correct directory name
+    # Read the LGN step-current noise seed from first chunk JSON to construct the datastore dir name.
+    # The sim appends the modified-parameter key to the dir, so the key is now
+    # lgn_stepcurrentsource_noise_seed (renamed from noise_seed; see mozaik commit 9b0d489).
+    # Accept the legacy `noise_seed` manifest field too, so pre-rename chunk manifests still work.
     first_chunk_path = f"{chunk_dir}/{trial}_{chunk_start}.json"
     with open(first_chunk_path) as f:
         chunk_meta = json.load(f)
-    noise_seed = chunk_meta[0].get("noise_seed", None)
+    noise_seed = chunk_meta[0].get(
+        "lgn_stepcurrentsource_noise_seed", chunk_meta[0].get("noise_seed", None)
+    )
 
     for i, chunk in enumerate(tqdm(chunks_to_load)):
         if noise_seed is not None:
-            path = os.path.join(datastore_prefix, f"SelfSustainedPushPull_trial{trial}_chunk{chunk}_____noise_seed:{noise_seed}")
+            path = os.path.join(datastore_prefix, f"SelfSustainedPushPull_trial{trial}_chunk{chunk}_____lgn_stepcurrentsource_noise_seed:{noise_seed}")
         else:
             path = os.path.join(datastore_prefix, f"SelfSustainedPushPull_trial{trial}_chunk{chunk}_____")
 

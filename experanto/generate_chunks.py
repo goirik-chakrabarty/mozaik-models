@@ -151,9 +151,14 @@ def main():
 
     # Generate chunks for each trial
     for trial in range(args.n_trials):
-        noise_seed = trial * 1000
+        lgn_stepcurrentsource_noise_seed = trial * 1000
         stimuli = [
-            {"modality": modality, "file": fname, "trial": trial, "noise_seed": noise_seed}
+            {
+                "modality": modality,
+                "file": fname,
+                "trial": trial,
+                "lgn_stepcurrentsource_noise_seed": lgn_stepcurrentsource_noise_seed,
+            }
             for fname, modality in entries
         ]
         rng = random.Random(args.seed + trial)
