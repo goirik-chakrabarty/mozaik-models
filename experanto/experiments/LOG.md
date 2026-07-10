@@ -5,6 +5,38 @@ Newest at top. Superseded blocks are annotated, never deleted. Template: `docs/R
 
 ---
 
+## 2026-07-02 — NTASKS scaling sweep (P1 sim) 🟢 DONE — optimum @ NTASKS=12; severe negative scaling beyond
+- **Goal:** measure how MOZAIK sim wall-time scales with MPI tasks. Sweep `NTASKS ∈ {4,8,12,16,24}`,
+  everything else fixed (`CPUS_PER_TASK=4`, `OMP=4` ⇒ cores = NTASKS×4; identical workload = copy of `0_0.json`).
+- **Result (all started 23:35:24, each own full node, AllocCPUS=192):**
+  | NTASKS | 4 | 8 | **12** | 16 | 24 |
+  |---|---|---|---|---|---|
+  | Elapsed | 40:51 | 21:08 | **16:55** | 1:16:52 | **>150 min (TIMEOUT)** |
+  | vs nt12 | 2.4× | 1.25× | **1.0×** | 4.5× | ≥8.9× |
+  jobs: nt4=14614500 · nt8=14614501 · nt12=14614503 · nt16=14614504 · nt24=14614505(TIMEOUT).
+- **Finding:** **U-shaped curve, optimum at NTASKS=12; adding ranks past ~12 makes the sim dramatically
+  SLOWER** (nt16 4.5×, nt24 never finished). Not the expected flat curve — it's actively negative.
+- **Root cause (from nt12 baseline `.err` 14602650):** only ~9% of wall is NEST `sim.run`; ~88% is
+  per-presentation `sheet.get_data()` (spike→Neo + **MPI gather to root**, `mozaik/models/__init__.py:180-189`).
+  Gather cost grows with rank count ⇒ more ranks inflate the 88% faster than they shrink the 9%.
+  Tell: blank presentations `took 76 s, of which 0 s simulation` (×22; no file read, ~49 ms run) — pure
+  get_data. Config `reset:False`, `null_stimulus_period:0.0`.
+- **Consequence (answered a user question):** environment/apptainer/BLAS/thread tuning **cannot**
+  meaningfully speed this up (Amdahl ceiling ≈1.1×). Run production at **NTASKS≈12**. Real speedups are
+  code-level: reduce recorded neurons (`to_record`); avoid `get_data` on blanks (~28% of runtime).
+- **Pre-registered stop condition (honored):** `TIME=02:30:00`; nt24 hit it → recorded ">150 min".
+- **Isolation (non-destructive):** each arm read an identical copy of `0_0.json` from
+  `/data/MOZAIK/mozaik_chunk_scaling/{N}_0.json`; array index = N ⇒ distinct output
+  `SelfSustainedPushPull_trial{N}_chunk0` (existing test3 trials 0/1/2 untouched).
+- **Configs:** `mozaik/cluster/experiments/ntasks-scaling/sim-scale-nt{4,8,12,16,24}.conf`
+  (new per-experiment subfolder convention — see `cluster/README.md`).
+- **Commit-tuple:** mozaik **`fb85e2e`** (dirty: sweep confs + README) · mozaik-models `4224a6b` (clean) ·
+  experanto `327c3a0` (clean) · container `mozaik-opt.sif`.
+- **Gate:** `capture_gate.py` re-run after adding confs → all 6 standard scenarios byte-identical (PASS).
+- **Run dir:** `experiments/2026-07-02_ntasks-scaling/` (design, `sacct_results.txt`, results table + root-cause).
+
+---
+
 ## 2026-07-02 — REFACTOR-02: consolidate `run-*.sbatch` into a config-driven launcher 🟢 PASS — behavior-preserving, committed
 - **Goal:** Remove the `mozaik/cluster/` launcher duplication (test33 §6). Reading the 12 `run-*.sbatch`
   showed 7 live in 3 families (sim/export/psth) sharing ~30 lines of boilerplate + 5 legacy (4 launch
