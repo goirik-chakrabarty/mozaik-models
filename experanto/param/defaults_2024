@@ -1,0 +1,42 @@
+{
+    # Leg-1 (environment-equivalence) param variant: identical to param/defaults EXCEPT the retina_lgn
+    # sheet uses original_2024_lgn_mode=True (SpatioTemporalFilterRetinaLGN_defaults_2024), i.e. the
+    # pre-#114 2024 LGN behaviour. Run with PARAM_FILE=param/defaults_2024 to isolate Axis A (env
+    # deps: neo/numpy/PyNN/imagen) from Axis B (the #114 LGN filter fix). See docs/plan/updating-mozaik/.
+    'input_space_type' : 'mozaik.space.VisualSpace',
+    'input_space': {
+        'update_interval': 7.0, # ms
+        'background_luminance': 50.0, # cd/m²
+    },
+    'visual_field': {
+        'centre': (0.0, 0.0), # degrees (x,y)
+        'size': (11.0, 11.0), # degrees (width, height)
+    },
+    'sheets' : {
+        'l4_cortex_exc': url("param/l4_cortex_exc"),
+        'l4_cortex_inh': url("param/l4_cortex_inh"),
+        'l23_cortex_exc': url("param/l23_cortex_exc"),
+        'l23_cortex_inh': url("param/l23_cortex_inh"),
+        'retina_lgn': url("param/SpatioTemporalFilterRetinaLGN_defaults_2024"),
+    },
+    'only_afferent' : False,
+    'results_dir': '',
+    'name' : 'SelfSustainedPushPullV1',
+    'reset' : False,
+    'feedback' :  True,
+    'null_stimulus_period' : 0.0,
+    'store_stimuli' : False,
+    'min_delay' : 0.1,
+    'max_delay' : 100,
+    'time_step' : 0.1,
+    'pynn_seed' : 5,
+    'mozaik_seed' : 1023,
+    'lgn_stepcurrentsource_noise_seed' : 0,
+    'l23' : True,
+    'trial' : 0,
+    'explosion_monitoring': {
+       'sheet_name': 'V1_Exc_L4',
+       'threshold': 50, # Hz
+    },
+    'steps_get_data': 0,
+}
