@@ -5,6 +5,128 @@ Newest at top. Superseded blocks are annotated, never deleted. Template: `docs/R
 
 ---
 
+## 2026-07-14 — S32000-all-videos ONE FULL TRIAL (P1 sim → export, ceph-ssd) 🟠 PRE-REGISTERED / launching
+- **Goal:** produce ONE full trial (trial 0) of the S32000-all-videos Experanto dataset — 41,723 stimuli
+  (31,706 img + 10,017 unique vid) presented to LSV1M V1 — end-to-end, and validate it before committing to
+  all 3 trials (~465–500k core-h). Plan: `docs/plan/plan-for-running-full-dataset.md`; sizing audit:
+  `docs/plan/audit/26-07-14_S32000_FULL_RUN_SIZING.md`.
+- **Commit-tuple:** mozaik `perf/neo14-getdata-speedup @ 5811092` (RESULTS_DIR/WORKSPACE redirect) ·
+  mozaik-models `main-mozaik-update @ b7d9916` (generate_chunks per-frame video cost; this LOG entry
+  uncommitted at pre-reg) · experanto `clean-spikeinterpolator` · SIF `mozaik-opt-qpatch_2026-07-14.sif` (neo 0.14.4).
+- **Config / seed:** `param/defaults` (mozaik_seed=1023, pynn_seed=5); trial 0, noise_seed=trial*1000+chunk
+  = chunk (0..63). Datastore redirected to ceph-ssd via RESULTS_DIR=/ws/S32000_full/datastores (WORKSPACE
+  bound to /ws). 12 ranks (12×4), OMP=4, node-exclusive medium96s/sapphirerapids. Conf
+  `cluster/experiments/S32000/sim-S32000-full.conf` (ARRAY=0-63, N_CHUNKS=64).
+- **Reads (pre-registered):** input_screen materialized (41,723 yml+npy, 37 GB, 120 sessions, frame
+  byte-match spot-check PASS); 64 time-balanced chunks (per-frame cost, all ~43.9 h est, 636–669 stim/chunk,
+  total 41,723). Gate `capture_gate.py --cmp` PASS (golden byte-identical). Runtime argv verified:
+  RESULTS_DIR + /ws bind present; S500 (`/project` trial0/1/2) protected because rm/write target /ws.
+- **Stop conditions (pre-registered):** (1) each chunk sim finishes < 48 h (target ~44 h); (2) 64/64
+  datastores present on /ws (~4.3 TB); (3) export validation — responses `end_time` == screen
+  `timestamps[-1]`, 35 ms video frames, per-image 497+49 ms, tier/modality counts, CSR `spike_indices`
+  well-formed. Falsification logged honestly.
+- **Result / decision:** _(pending — update on completion)_. Expected ~155–168k core-h, export ~232 GB.
+- **Artifacts:** confs `cluster/experiments/S32000/{sim,export}-S32000-full.conf`; launchers
+  `mozaik/slurm_s32000_full/`; run root ceph-ssd `S32000_full/{input_screen,chunks,datastores,export}`.
+
+## 2026-07-14 — S32000-all-videos PILOT (P1 sim → export, ceph-ssd) 🟢 DONE — full-run numbers collected
+- **Goal:** de-risk + measure the S32000-all-videos pipeline before committing to the full run. First
+  end-to-end exercise of the **VIDEO export path** (`movie_frame_duration_ms=35`, untested at S500), and
+  collect hard numbers (sim wall, raw GB, export GB, core-hours) to size the full 3-trial run.
+- **Commit-tuple:** mozaik `perf/neo14-getdata-speedup` @ `f7eeba8` · mozaik-models `main` (dirty:
+  `materialize_subset_screen.py` `--selection-json`; this LOG entry) · experanto `clean-spikeinterpolator` ·
+  SIF `mozaik-sif/mozaik-opt-qpatch_2026-07-14.sif` (production, neo 0.14.4).
+- **Config / seed:** pilot chunk = **30 images + 9 videos** (4 Clip@300f, 1 DotSeq@450f, 2 Monet2@900f,
+  2 Trippy@900f) = **99 presentations** (39 stim + 60 blank), **212.2 s** timeline (**87% video** — matches
+  the full run's ~90%). `param/defaults` (mozaik_seed=1023, pynn_seed=5); TRIAL=7/noise_seed=7000 for the
+  sim (collision-avoidance vs S500 trial0); 12 ranks (12×4), OMP=4, node-exclusive.
+- **Storage:** ceph-ssd workspace `/mnt/ceph-ssd/workspaces/ws/nix00014/u18196-mozaik_s32000/S32000_pilot/`
+  (mirrors final-run I/O; NOT project vast). Input read + datastore write + export all on ceph-ssd.
+- **Sim metrics (job 14858445):** wall **8862 s** (setup 178 s + mozaik-reported 8681 s). NEST simulator
+  **1481 s (17%)**, **Mozaik overhead 7201 s (82%)** — wall is dominated by per-presentation get_data, NOT
+  NEST. Per-presentation wall: **image/blank ≈ 52 s**, **video ≈ 0.55 s/frame + ~48 s base** (300f→~205 s,
+  900f→~570 s). Raw datastore **4.9 GB** (23.1 MB/sim-s). **177.6 core-hours** (72 billed cores × 2.47 h).
+- **Export metrics (job 14860177):** wall **340 s** (99% = datastore load, the neo14 get_data path).
+  Output **267 MB**: responses **221 MB** (spikes.npy 220 MB, 37500 units) + screen **47 MB** (9216 B/frame,
+  f32 36×64). Input screen **47 MB**.
+- **VIDEO export path VERIFIED 🟢:** timeline aligned (responses `end_time`=212.191 s == screen
+  `timestamps[-1]`=212.191 s == export total 212191 ms); video frames at **35 ms** (5250 @ 0.0350 s);
+  per-image **497 ms + 49 ms post-blank**; frame counts 4×300/1×450/4×900 exact; tiers train=35/val=4;
+  modalities 30 img + 9 vid + 61 blank.
+- **FULL-RUN PROJECTION (per trial: 31,706 img + 10,017 vid = 41,723 stim; 4,253,182 video frames; ~46 h
+  timeline = ~780× pilot):** **core-hours ≈ 140k/trial → ~420k for 3 trials** (presentation-model cross-check
+  agrees). NOTE: predecessor handoff's 42,021 / 4,521,382 / 48.8 h used the *non-deduped* 10,315 videos;
+  correct deduped figures (10,017 unique) are ~5–6% smaller — projections above use the corrected values.
+  Raw datastore **~4 TB/trial** transient (~10 GB/chunk @ ~350 chunks; stream-delete).
+  Export **~225 GB/trial** (spikes ~183 GB + screen ~42 GB) → **~675 GB for 3 trials**. Input screen
+  (once) **~42 GB**. Chunking: per-trial serial wall ~2037 h → **~370 chunks/trial @ ~5.5 h/chunk** (~1110
+  array tasks for 3 trials).
+- **Result / decision:** 🟢 pipeline + video export validated on ceph-ssd; numbers collected. **Storage is
+  cheap (~675 GB export); the cost driver is ~440k core-hours** — surfaced to user before committing to the
+  full 3-trial run (see Open Question re: 1-trial fallback).
+- **Caveats / honesty:** (1) Export needed a **pilot-only fix** — chunk `7_0.json` is trial-0 content
+  (records carry trial=0) run under sim TRIAL=7; export.py filters segments by `stim_params['trial']==TRIAL`,
+  so first attempt (TRIAL=7, job 14860163) matched 0 segments and crashed in `finalize()`. Fixed by a symlink
+  `datastores/…trial0…:0 → …trial7…:7000` + re-run as TRIAL=0. The **full run has no such mismatch**
+  (generate_chunks stamps each record's trial to match its file/sim trial). (2) Projections extrapolate one
+  video-heavy chunk linearly by timeline; the pilot's 87%-video mix closely matches the full run, but true
+  per-chunk variance is unmeasured. (3) Commit-tuple has uncommitted changes (materialize `--selection-json`).
+- **Run dir / artifacts:** launchers `mozaik/slurm_s32000_pilot/26-07-14_pilot_{sim,export}_cephssd.sbatch`
+  + `pilot_{run,export}_cephssd.sh`; confs `mozaik/cluster/experiments/{sim,export}-S32000-pilot.conf`
+  (superseded by ceph-ssd launchers); output on ceph-ssd `S32000_pilot/export/trial0/`.
+
+## 2026-07-14 — P1 sim speedup BEYOND golden: quantities registry-memo patch (lever B) 🟢 DONE — 741s < golden 1015s
+- **Goal:** make the P1 test3 sim faster than the neo12 golden without breaking correctness
+  (`docs/audits/26-07-13_P1_SIM_SPEEDUP_BEYOND_GOLDEN.md` §1). Follows the neo `_contains` O(1) fix (CP2).
+- **Commit-tuple:** mozaik `perf/neo14-getdata-speedup` (this checkpoint) · mozaik-models `main` (LOG entry only) ·
+  experanto `clean-spikeinterpolator` · SIF `mozaik-sif/mozaik-opt-neopatch_2026-07-13.sif` + quantities
+  `patches/quantities-0.16.4/registry.py` bind-mounted (baked SIF: `mozaik-opt-qpatch_2026-07-14.sif`).
+- **Method / lever:** re-profiled the patched sim (perf1, nt12, rank-0 cProfile). After `_contains` O(1),
+  the top addressable cost is quantities unit-hashing: `Dimensionality.__hash__` (4.55M calls / 184s) calls
+  `hash(unit_registry['dimensionless'])` on every hash, and `UnitRegistry.__getitem__` re-runs a full
+  ast.parse+compile+eval each call (`print_callers`: **all** 4.55M lookups are label `'dimensionless'`).
+  Fix = memoize bare-name registry lookups (identity-stable singletons only; compound exprs fall through).
+- **Config / seed:** test3 chunk (2 img + 1 video), nt12 (12×4), `OMP=4`, nomultithread, node-exclusive,
+  plain mpirun (golden conditions); `param/defaults` (`mozaik_seed=1023`, `pynn_seed=5`); isolated
+  `RUN_NAME=sb_qpatch NOISE_SEED=999985`, direct `run.py`, no `rm -rf` (S500 untouched).
+- **Metrics (faithful sbatch, job 14844209):** wall **741s** vs neopatch-only **913s** (−19%) vs golden
+  **1015s / 16:55 (−27%)**. 84 "Finished simulating" lines = 12 ranks × 7 presentations = full golden
+  workload; `run.py exit: 0`.
+- **Correctness gate (job 14844214, neopatch SIF + quantities patch):** **30/30** `tests/full_model`
+  green — `test_models.py` 20 passed + `test_models_stepcurrentmodule.py` 10 passed (spikes + voltages).
+- **Behavior-equivalence:** `patches/quantities-0.16.4/test_registry_equiv.py` byte-identical patched vs
+  unpatched (dimensionality strings, magnitudes, identity-stability incl. compound `m/s`/`g/cc`, cross-
+  equality, neo spiketrain roundtrip; cache-exercising repeats).
+- **Result / decision:** 🟢 goal met — 27% below golden, 30/30 green. Banked (commit + tag
+  `neo14-perf-qpatch-26-07-14`, `docs/ROLLBACK.md`, new-name SIF). Baked SIF
+  `mozaik-opt-qpatch_2026-07-14.sif` re-certified 30/30 directly (no bind-mount, job 14847923).
+- **Artifacts:** `mozaik/patches/quantities-0.16.4/` (patch+diff+README+equiv test); sbatch
+  `mozaik/slurm_neo14_pytest/26-07-14_{qpatch_test3,prof_qpatch,qpatch_gate}_sbatch.sbatch`; def
+  `mozaik/mozaik-opt-neo14_2026-07_qpatch.def`; profiles `getdata_rank0{,_qpatch}.prof`.
+- **Caveats / honesty:** lever B is the low-risk algorithmic win; the biggest remaining lever (A = skip
+  get_data on the 22/84 zero-sim blanks, ~28%) is output-changing and left for explicit sign-off. Faithful
+  numbers are the node-exclusive sbatch; inline runs are ~40% inflated (relative A/B only).
+
+## 2026-07-13 — S500 dataset creation (P1 sim → export) 🟠 PRE-REGISTERED / in progress
+- **Goal:** produce a new Experanto dataset by presenting the **P4 S500 subset (500 images)** to the LSV1M V1 model
+  over **3 trials** and exporting to Experanto. First use of a multi-session P4-subset input dataset for P1.
+- **Commit-tuple:** mozaik `5359cfc` (`csng-mozaik-update`, dirty: base_path env + compose BASE_PATH plumbing) ·
+  mozaik-models `f75f108` (`main-mozaik-update`, dirty: new `materialize_subset_screen.py`) ·
+  experanto `327c3a0` (`clean-spikeinterpolator`) · SIF `mozaik-sif/mozaik-opt_2026-07-10.sif` (neo 0.14.4).
+- **Config / seed:** `mozaik_seed=1023`, `pynn_seed=5` (from `experanto/param/defaults`); per (trial,chunk)
+  `noise_seed = TRIAL*1000 + CHUNK` (runner convention); 3 trials × 6 chunks = 18 sim array tasks (~83–84 img/chunk).
+- **Input:** P4 `subset_S500.json` (fps_seed=42, first 500 of `fps_order`; all `image`; 19 source sessions) →
+  materialized to `MOZAIK/S500_3trial/input_screen/` (500 yml+npy, `(36,64) f32`) by `materialize_subset_screen.py`.
+  Chunks: `MOZAIK/S500_3trial/chunks/{0..2}_{0..5}.json`.
+- **Outputs (pre-registered, new paths):** sim datastores under `mozaik-models/experanto/` (gitignored);
+  export → `/mnt/vast-react/projects/neural_foundation_model/MOZAIK/S500_3trial/export/`.
+- **Stop conditions / success bar (pre-registered):** all 18 sim tasks exit 0:0 + datastores written; export produces
+  spike+screen shards for **500 stimuli × 3 trials** with timeline alignment holding
+  (`responses/meta.yml:end_time == screen/timestamps.npy[-1]`).
+- **Confs:** `mozaik/cluster/experiments/{sim-S500.conf, export-S500.conf}`. Launch: `./cluster/submit.sh <conf>`.
+- **Run dir:** `experiments/2026-07-13_s500-dataset/` (provenance.json to be stamped on completion).
+- **Result / decision:** _pending — sim + export in progress; this block to be updated with metrics on completion._
+
 ## 2026-07-02 — NTASKS scaling sweep (P1 sim) 🟢 DONE — optimum @ NTASKS=12; severe negative scaling beyond
 - **Goal:** measure how MOZAIK sim wall-time scales with MPI tasks. Sweep `NTASKS ∈ {4,8,12,16,24}`,
   everything else fixed (`CPUS_PER_TASK=4`, `OMP=4` ⇒ cores = NTASKS×4; identical workload = copy of `0_0.json`).
