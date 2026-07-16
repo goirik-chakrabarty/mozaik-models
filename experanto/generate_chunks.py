@@ -31,15 +31,18 @@ import yaml
 # "*" = repeat presentation (warm cache).
 TIME_COSTS = {
     "first_image": 80,
-    "first_video": 250,
     "image": 70,
-    "video": 145,
     "blank": 75,
+    # Video cost is PER-FRAME, not flat: measured from the S32000 pilot as ~48 s per-presentation
+    # get_data overhead + ~0.55 s/frame. A flat per-video cost badly under-weights long (900-frame)
+    # videos in the greedy balancer. See docs/plan/audit/26-07-14_S32000_FULL_RUN_SIZING.md §3.
+    "video_base": 48,
+    "video_per_frame": 0.55,
 }
 
 
 def scan_metadata(data_root):
-    """Read all stimulus metadata YAMLs and return list of (filename, modality)."""
+    """Read all stimulus metadata YAMLs and return list of (filename, modality, num_frames)."""
     meta_dir = os.path.join(data_root, "screen", "meta")
     if not os.path.isdir(meta_dir):
         print(f"Error: metadata directory not found: {meta_dir}", file=sys.stderr)
@@ -53,7 +56,7 @@ def scan_metadata(data_root):
             meta = yaml.safe_load(f)
         modality = meta.get("modality")
         if modality in ("image", "video"):
-            entries.append((fname, modality))
+            entries.append((fname, modality, int(meta.get("num_frames", 1))))
     return entries
 
 
@@ -71,7 +74,8 @@ def estimate_cost(item, seen_files):
     if modality == "image":
         cost += TIME_COSTS["first_image"] if is_first else TIME_COSTS["image"]
     elif modality == "video":
-        cost += TIME_COSTS["first_video"] if is_first else TIME_COSTS["video"]
+        # Per-frame cost dominates for long videos; num_frames comes from the yml metadata.
+        cost += TIME_COSTS["video_base"] + item["num_frames"] * TIME_COSTS["video_per_frame"]
 
     seen_files.add(filename)
     return cost
@@ -138,8 +142,8 @@ def main():
     # Scan metadata
     print(f"Scanning metadata from: {args.data_root}/screen/meta/")
     entries = scan_metadata(args.data_root)
-    n_images = sum(1 for _, m in entries if m == "image")
-    n_videos = sum(1 for _, m in entries if m == "video")
+    n_images = sum(1 for _, m, _ in entries if m == "image")
+    n_videos = sum(1 for _, m, _ in entries if m == "video")
     print(f"Found {len(entries)} stimuli ({n_images} images, {n_videos} videos)")
 
     if not entries:
@@ -158,8 +162,11 @@ def main():
                 "file": fname,
                 "trial": trial,
                 "lgn_stepcurrentsource_noise_seed": lgn_stepcurrentsource_noise_seed,
+                # num_frames is used only for cost balancing; stripped before writing (see below)
+                # so the emitted chunk schema stays identical to the sim-validated format.
+                "num_frames": num_frames,
             }
-            for fname, modality in entries
+            for fname, modality, num_frames in entries
         ]
         rng = random.Random(args.seed + trial)
         rng.shuffle(stimuli)
@@ -169,8 +176,12 @@ def main():
         print(f"\nTrial {trial}:")
         for chunk_idx, chunk in enumerate(chunks):
             out_path = os.path.join(args.output_dir, f"{trial}_{chunk_idx}.json")
+            # Strip the cost-only num_frames field so the emitted record schema is exactly
+            # {modality, file, trial, lgn_stepcurrentsource_noise_seed} as the sim expects.
             with open(out_path, "w") as f:
-                json.dump(chunk, f)
+                json.dump(
+                    [{k: v for k, v in s.items() if k != "num_frames"} for s in chunk], f
+                )
 
             est_time = estimate_chunk_time(chunk)
             n_img = sum(1 for s in chunk if s["modality"] == "image")
