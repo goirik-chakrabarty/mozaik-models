@@ -5,6 +5,34 @@ Newest at top. Superseded blocks are annotated, never deleted. Template: `docs/R
 
 ---
 
+## 2026-07-30 — test3 `simulation_seed` variability on `seed_refactor` (mechanism verification) 🟢 PASS
+- **Goal:** verify Tibor Rózsa's `seed_refactor` three-seed scheme (`model`/`simulation`/`experiment`)
+  gives the trial-variability property at full model scale: same network, different noise per trial when
+  only `simulation_seed` varies. Companion to `../../docs/audits/26-07-30_SEED_REFACTOR_VS_NEST_SEED_RENAME.md`.
+- **Commit-tuple:** mozaik `seed_refactor @ 72b4cd1` (Tibor's refactor, replaces our
+  `lgn_stepcurrentsource_noise_seed`) · mozaik-models: **isolated scratch copy** of `main-mozaik-update @
+  962825b` (code+param+or_map) with `param/defaults` seeds migrated to the 3-seed schema — NOT committed
+  (scratch verification) · experanto `clean-spikeinterpolator` · SIF `mozaik-opt-qpatch_2026-07-14.sif` (neo 0.14.4).
+- **Config / seed:** `param/defaults` migrated → `model_seed=1023`, `experiment_seed=0`,
+  `simulation_seed ∈ {1000, 2000, 3000}` (one per trial). test3 = 2 img + 1 video; TRIAL=0/1/2 select the
+  three chunk files (identical stimuli), CHUNK=0. 12 MPI ranks, OMP=1. sbatch array `15103074_[0-2]`,
+  medium96s/sapphirerapids, ~12 min/run in parallel (WALL 739/736/742 s).
+- **Reads (pre-registered):** (a) connectivity params identical across trials once `simulation_seed` is
+  excluded; (b) per-segment spikes differ across trials. Stimuli confirmed identical across the three
+  chunk files; `RandomizedExperanto` ignores the chunk `noise_seed` field (only `simulation_seed` drives noise).
+- **Metrics:** connectivity `parameters.json` (seed excluded) **identical** across all 3 (`model_seed=1023`,
+  hash `88e188e8f583`). Spikes: **42/42 segments differ, 0 identical** (e.g. Segment0 46 685 / 47 207 / 47 012).
+- **Result / decision:** 🟢 PASS. `simulation_seed` on `seed_refactor` yields identical connectivity +
+  different noise per trial, at full test3 scale. Mechanism confirmed viable.
+- **Caveats / honesty:** (1) ⚠️ `simulation_seed=0` is a **hard NEST error** (`rng_seed ∈ (0, 2^32-1)`);
+  the old `noise_seed = trial*1000+chunk` gives 0 for trial0/chunk0 → migration must add a nonzero base.
+  (2) Old `mozaik_seed`+`pynn_seed` collapse to one `model_seed` → network identity differs from the old
+  scheme; **do not mix schemes within a dataset** (S32000 repair stays on old `perf` code). (3) Scratch
+  run — datastores in session scratchpad, not permanent; not a dataset-production run.
+- **Run dir:** scratch `.../scratchpad/SR_TEST3/` (isolated project copy + `run`/`sbatch`/`compare` scripts).
+- **Artifacts:** `../../docs/audits/26-07-30_SEED_REFACTOR_VS_NEST_SEED_RENAME.md` §3b; sbatch
+  `sbatch_seedrefactor_test3.sbatch`; compare `compare_seedrefactor_trials.py`.
+
 ## 2026-07-14 — S32000-all-videos ONE FULL TRIAL (P1 sim → export, ceph-ssd) 🟠 PRE-REGISTERED / launching
 - **Goal:** produce ONE full trial (trial 0) of the S32000-all-videos Experanto dataset — 41,723 stimuli
   (31,706 img + 10,017 unique vid) presented to LSV1M V1 — end-to-end, and validate it before committing to
