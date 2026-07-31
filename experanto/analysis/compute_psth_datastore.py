@@ -32,14 +32,32 @@ N_TRIALS = int(os.environ.get("N_TRIALS", "51"))  # override to match the Expera
 BIN_SIZE_MS = 10
 PRE_STIM_MS = 100
 POST_STIM_MS = 100
-SHEET_NAME = "V1_Exc_L2/3"
-ST_NAME = "PixelMovieExperanto"
+SHEET_NAME = os.environ.get("SHEET_NAME", "V1_Exc_L2/3")
+ST_NAME = os.environ.get("ST_NAME", "PixelMovieExperanto")
 
-INPUT_DIR = Path(".")
-OUTPUT_DIR = Path("results/psth_test33_datastore")
-NEURON_INDICES_FILE = Path("results/psth_test33/top20_neuron_indices.npy")
+# All paths overridable via env so this works for any export (defaults = test33).
+INPUT_DIR = Path(os.environ.get("DATASTORE_DIR", "."))
+OUTPUT_DIR = Path(os.environ.get("OUTPUT_DIR", "results/psth_test33_datastore"))
+NEURON_INDICES_FILE = Path(
+    os.environ.get("NEURON_INDICES_FILE", "results/psth_test33/top20_neuron_indices.npy")
+)
 
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def resolve_datastore(trial):
+    """Locate the datastore dir for a trial by globbing the stable run prefix, so this is
+    agnostic to the sim's seed scheme (old ``noise_seed:<n>`` / ``lgn_stepcurre_<sha1>:<n>`` or
+    new ``simulation_seed:<n>``). Falls back to the historical noise_seed name."""
+    import glob as _glob
+
+    pref = f"SelfSustainedPushPull_trial{trial}_chunk0_____"
+    matches = sorted(_glob.glob(str(INPUT_DIR / (pref + "*"))))
+    if len(matches) == 1:
+        return matches[0]
+    if len(matches) > 1:
+        raise RuntimeError(f"Ambiguous datastore for trial{trial}: {matches}")
+    return str(INPUT_DIR / f"{pref}noise_seed:{trial * 1000}")  # backward-compat fallback
 
 
 def parse_stimulus(stim_str):
@@ -78,9 +96,7 @@ def main():
         load=True,
         parameters=ParameterSet(
             {
-                "root_directory": str(
-                    INPUT_DIR / f"SelfSustainedPushPull_trial0_chunk0_____noise_seed:0"
-                ),
+                "root_directory": resolve_datastore(0),
                 "store_stimuli": False,
             }
         ),
@@ -173,10 +189,7 @@ def main():
             load=True,
             parameters=ParameterSet(
                 {
-                    "root_directory": str(
-                        INPUT_DIR
-                        / f"SelfSustainedPushPull_trial{trial}_chunk0_____noise_seed:{trial * 1000}"
-                    ),
+                    "root_directory": resolve_datastore(trial),
                     "store_stimuli": False,
                 }
             ),
