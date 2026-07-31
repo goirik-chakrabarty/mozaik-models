@@ -108,14 +108,21 @@ def create_randomized_experanto(model):
     trial = int(os.environ.get("TRIAL", 0))
     chunk = int(os.environ.get("CHUNK", 0))
     chunk_dir = os.environ.get("CHUNK_DIR", "/data/mozaik_chunk")
+    # base_path is the input Experanto *screen* dataset the stimuli are read from. Overridable via the
+    # BASE_PATH env (e.g. a P4-subset dataset materialized by materialize_subset_screen.py); the default
+    # preserves the historical single-session dataset so existing confs are unchanged.
+    base_path = os.environ.get(
+        "BASE_PATH",
+        "/data/test_upsampling_without_hamming_30.0Hz/dynamic26872-17-20-Video-021a75e56847d574b9acbcc06c675055_30hz",
+    )
     chunk_path = f"{chunk_dir}/{trial}_{chunk}.json"
-    print(f"Using trial: {trial}, chunk: {chunk}, chunk_path: {chunk_path}")
+    print(f"Using trial: {trial}, chunk: {chunk}, chunk_path: {chunk_path}, base_path: {base_path}")
     return [
         RandomizedExperanto(
             model,
             ParameterSet(
                 {
-                    "base_path": "/data/test_upsampling_without_hamming_30.0Hz/dynamic26872-17-20-Video-021a75e56847d574b9acbcc06c675055_30hz",
+                    "base_path": base_path,
                     "chunk_dict_path": chunk_path,
                     "width": 11,
                     "movie_frame_duration": 35,
