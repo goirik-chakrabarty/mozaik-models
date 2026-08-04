@@ -34,6 +34,63 @@ import nest
 
 nest.Install("stepcurrentmodule")
 
+# --- Workflow 2: optional inline Experanto export for single-chunk runs -------------------------
+# `python run.py <sim> <threads> <param> <run_name> --export` simulates one chunk and then, on
+# rank 0, exports that datastore to a FULL Experanto shard (spikes + screen) written NEXT TO the
+# datastore — no separate export job. Reuses the CSNG-MFF #6 exporter (mozaik.tools.experanto_export).
+# Multi-chunk datasets must still use the canonical export.py (workflow 1), which concatenates chunks.
+import os
+
+EXPORT_INLINE = "--export" in sys.argv
+if EXPORT_INLINE:
+    sys.argv.remove("--export")  # strip before run_workflow parses the mozaik positional CLI
+
+
+def export_datastore_inline(data_store):
+    """Export the just-simulated (in-memory) datastore to a full Experanto shard beside it.
+
+    Reads the single chunk this run simulated (TRIAL/CHUNK/CHUNK_DIR — the same env
+    create_randomized_experanto uses). Rank-0 only: PyNN gathers all ranks onto MPI_ROOT, so only
+    rank 0's in-memory store holds every neuron's spikes.
+    """
+    from mozaik.storage.queries import param_filter_query
+    from mozaik.tools.experanto_export import (MozaikScreenExporter,
+                                                MozaikTrialExporter)
+
+    trial = int(os.environ.get("TRIAL", 0))
+    chunk = int(os.environ.get("CHUNK", 0))
+    chunk_dir = os.environ.get("CHUNK_DIR", "/data/mozaik_chunk")
+
+    experiment_dir = os.path.join(data_store.parameters.root_directory, "experanto")
+    responses_dir = os.path.join(experiment_dir, "responses") + "/"
+    chunk_path = f"{chunk_dir}/{trial}_{chunk}.json"
+    print(
+        f"[inline-export] trial={trial} chunk={chunk} -> {experiment_dir} "
+        f"(chunk_json={chunk_path})",
+        flush=True,
+    )
+
+    # One DSV over the in-memory store; no st_name filter so blank (InternalStimulus) segments are
+    # kept and the spike timeline stays aligned with the screen timeline (same as export.py).
+    dsv = param_filter_query(data_store, sheet_name="V1_Exc_L2/3")
+
+    spikes = MozaikTrialExporter(
+        responses_dir, trial_id=trial, sampling_rate=1000.0, append_mode=False
+    )
+    spikes.process_batch([dsv])
+    spikes.finalize()
+
+    screen = MozaikScreenExporter(
+        output_dir=experiment_dir,
+        chunk_paths=[chunk_path],
+        frame_duration_ms=7.0,
+        movie_frame_duration_ms=35.0,
+    )
+    screen.process_batch([dsv])
+    screen.finalize()
+    print(f"[inline-export] done -> {experiment_dir}", flush=True)
+
+
 if True:
     data_store, model = run_workflow(
         "SelfSustainedPushPull", SelfSustainedPushPull, create_randomized_experanto
@@ -54,6 +111,10 @@ if True:
         model.connectors["V1L4ExcL23ExcConnection"].store_connections(data_store)
         model.connectors["V1L4ExcL23InhConnection"].store_connections(data_store)
     data_store.save()
+
+    # Workflow 2: inline export (rank 0 only) — after the datastore is saved.
+    if EXPORT_INLINE and mozaik.mpi_comm.rank == mozaik.MPI_ROOT:
+        export_datastore_inline(data_store)
 else:
     setup_logging()
     data_store = PickledDataStore(

@@ -5,6 +5,72 @@ Newest at top. Superseded blocks are annotated, never deleted. Template: `docs/R
 
 ---
 
+## 2026-08-04 — single-chunk sim + INLINE export on csng (workflow 2, three-seed migration) 🟢 PASS
+- **Goal:** validate (a) the three-stream seed migration of `param/defaults` (so sims run on
+  `csng-mozaik-update`) and (b) the new inline export path in `run.py` (`--export`) that simulates one
+  chunk and exports a full Experanto shard next to the datastore in the same process.
+- **Commit-tuple:** mozaik **`csng-mozaik-update @ 9de2c35`** (seed_refactor + #5 + #6) · mozaik-models
+  `main-mozaik-update` with `param/defaults` **migrated in place** to `model_seed=1023`/`simulation_seed=1`/
+  `experiment_seed=0` (old `{pynn_seed,mozaik_seed,lgn_stepcurrentsource_noise_seed}` kept as a comment) and
+  `run.py` `--export` added (uncommitted) · experanto (sibling `goirik/experanto`) · SIF
+  `mozaik-opt-qpatch_2026-07-14.sif`.
+- **Config:** compute node c0013, direct `mpirun -n 12 --bind-to none --oversubscribe python -u run.py nest 12
+  param/defaults results_dir '\''/data/_inline_sim_test_26-08-04/'\'' simulation_seed 1000
+  trial0_chunk0_3seed_inline --export`. TRIAL=0/CHUNK=0, `CHUNK_DIR=/data/MOZAIK/mozaik_chunk_test3`, OMP=1.
+  test3 = 2 img + 1 video. Sim run time 583 s; inline export +~25 s (rank 0).
+- **Non-destructive:** output to a **fresh** `/data/_inline_sim_test_26-08-04/` scratch path; no datastore or
+  export overwritten. The Jun-2 reference `/data/mozaik_data_test3/` used only for comparison.
+- **Reads (pre-registered):** (a) sim runs on csng (no seed `KeyError`); (b) inline shard structure matches
+  the reference (same stimuli/network); (c) timeline invariant holds; (d) spikes DIFFER from the reference
+  (different `simulation_seed` → different noise, same network).
+- **Metrics:** shard at `<datastore>/experanto/{responses,screen}`. Structure vs reference: n_signals 37500 ✓,
+  CSR spike_indices 37501 ✓, stimuli_order ✓, timestamps 307 frames EXACT ✓, combined_meta 8 entries ✓,
+  screen pixels 3 files EXACT ✓. Invariant: spike end_time == screen[-1] == 12.446 s ✓. Noise: 1 523 360 new
+  vs 1 480 099 ref spikes, not identical ✓ (as designed).
+- **Result / decision:** 🟢 PASS. Seed migration lets csng simulate; workflow 2 produces a correct full shard
+  inline. **Not** a byte-equivalence to the old scheme (expected — `seed_refactor` changes noise bit-for-bit).
+- **Caveats / honesty:** (1) `simulation_seed` overridden to 1000 (nonzero; NEST rejects 0). (2) The cluster
+  **sim runner still passes `lgn_stepcurrentsource_noise_seed`** — must be repointed to `simulation_seed`
+  before workflow 1's sim step runs on csng via `submit.sh` (follow-up). (3) Only `param/defaults` migrated;
+  `defaults_2024` + `params/param_*` still old. (4) csng lacks perf's get_data speedups (ToDo reconcile).
+- **Run dir:** `/data/_inline_sim_test_26-08-04/SelfSustainedPushPull_trial0_chunk0_3seed_inline_____simulation_seed:1000/`
+  (datastore + `experanto/` shard + `launch.sh` + `sim.log`).
+
+---
+
+## 2026-08-04 — test3 full export end-to-end on `csng-mozaik-update` (export-path validation) 🟢 PASS
+- **Goal:** validate the DataStore→Experanto **export** end-to-end after switching the live `mozaik/`
+  checkout from `perf` to `csng-mozaik-update` (the branch with review #6's relocated exporter
+  `mozaik/tools/experanto_export.py`). Confirms the earlier import-only fix holds through a full run, and
+  that the relocated/parametrized exporter reproduces the pre-#6 output. Handoff:
+  `../../docs/handoffs/26-08-04_12-29_HANDOFF_EXPORT_IMPORT_BREAK_MOZAIK_ON_CSNG.md`.
+- **Commit-tuple:** mozaik **`csng-mozaik-update @ 9de2c35`** (seed_refactor + #5 + #6) · mozaik-models
+  `main-mozaik-update` (export shim `0430987` → `mozaik.tools.experanto_export`) · experanto (sibling
+  `goirik/experanto`) · SIF `mozaik-opt-qpatch_2026-07-14.sif` (neo 0.14.4).
+- **Config:** ran on a compute node directly via `cluster/apptainer-compose-export.sh` (not sbatch),
+  replicating `run_job.sh`'s export branch with `export-test3.conf` values (`N_CHUNKS=1`, `CHUNK 0`,
+  `BATCH_SIZE=1`, `DATASTORE_PREFIX=1_TEST3_EXPT`, `CHUNK_DIR=/data/MOZAIK/mozaik_chunk_test3`), for
+  `TRIAL ∈ {0,1,2}`. Input datastores use the **old** `noise_seed:{0,1000,2000}` naming — export's glob is
+  scheme-agnostic and matched them. OMP=4. ~26 s/trial (load-bound; csng lacks perf's get_data speedups, but
+  test3 is tiny so immaterial).
+- **Non-destructive:** wrote to a **fresh** path `OUTPUT_PREFIX=/data/mozaik_data_test3_csng_26-08-04/trial`;
+  the prior `/data/mozaik_data_test3` (Jun-2 reference) was left untouched and used as the comparison target.
+- **Reads (pre-registered):** (a) export completes for all 3 trials; (b) timeline invariant holds
+  (spike `end_time` == `screen/timestamps.npy[-1]`); (c) output byte-identical to the Jun-2 reference export
+  (same input datastores) — validates #6's relocation/parametrization is behaviour-preserving.
+- **Metrics:** all 3 trials 37500 units, 7 segments (3 stim / 4 blank), 307 frames, end_time 12.446 s.
+  Invariant holds all 3. **EXACT match to reference:** spikes (1 480 099 / 1 496 296 / 1 491 426), CSR
+  `spike_indices` (37501), `timestamps.npy`, `combined_meta.json` (8 entries), screen pixel arrays (3 files).
+- **Result / decision:** 🟢 PASS. The export runs and reproduces the reference exactly on `csng-mozaik-update`;
+  the import break is fully resolved end-to-end.
+- **Caveats / honesty:** (1) qpatch SIF used via explicit `SIF_IMAGE` override — csng's compose default
+  reverted to `mozaik-opt.sif`. (2) Reads from `/data` only; the `/ws` WORKSPACE bind + S32000 launchers are
+  perf-only (ToDo reconcile). (3) Export needs no seeds, so the pending three-seed migration doesn't gate it.
+- **Run dir:** output `/data/mozaik_data_test3_csng_26-08-04/trial{0,1,2}`; compare script
+  `analysis/_compare_test3_csng_vs_ref.py` (one-off).
+
+---
+
 ## 2026-07-30 — test3 `simulation_seed` variability on `seed_refactor` (mechanism verification) 🟢 PASS
 - **Goal:** verify Tibor Rózsa's `seed_refactor` three-seed scheme (`model`/`simulation`/`experiment`)
   gives the trial-variability property at full model scale: same network, different noise per trial when
