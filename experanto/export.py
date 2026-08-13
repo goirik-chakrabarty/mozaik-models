@@ -125,6 +125,12 @@ output_prefix = os.environ.get(
 )
 datastore_prefix = os.environ.get("DATASTORE_PREFIX", "")
 
+# Which sheets to fold into spikes.npy. Unset/empty = every recorded sheet (multi-sheet default).
+# Comma-separated (e.g. "V1_Exc_L2/3" or "V1_Exc_L4,V1_Exc_L2/3") restricts to a subset.
+_sheet_env = os.environ.get("SHEET_NAMES", "").strip()
+sheet_names = [s.strip() for s in _sheet_env.split(",") if s.strip()] or None
+print(f"Sheet selection: {sheet_names if sheet_names else 'ALL recorded sheets'}")
+
 # Load tier reference mapping if provided
 tier_reference = None
 if args.tier_reference:
@@ -143,6 +149,7 @@ for trial in tqdm(args.trials):
             trial_id=trial,
             sampling_rate=1000.0,
             append_mode=is_resume,
+            sheet_names=sheet_names,
         )
 
     # Initialize screen exporter with ALL chunk JSONs (needed for correct
@@ -203,9 +210,10 @@ for trial in tqdm(args.trials):
             replace=False,
         )
 
-        # Create View — no st_name filter so blank segments (InternalStimulus)
-        # are included, keeping spike timeline aligned with screen timeline
-        dsv = param_filter_query(data_store, sheet_name="V1_Exc_L2/3")
+        # Create View — no st_name filter so blank segments (InternalStimulus) are included, keeping
+        # the spike timeline aligned with the screen timeline; no sheet_name filter so every recorded
+        # sheet is available (the exporter selects/folds sheets per `sheet_names`).
+        dsv = param_filter_query(data_store)
         dsv_list.append(dsv)
 
         # Process in batches to manage memory

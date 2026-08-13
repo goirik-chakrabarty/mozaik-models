@@ -71,11 +71,19 @@ def export_datastore_inline(data_store):
     )
 
     # One DSV over the in-memory store; no st_name filter so blank (InternalStimulus) segments are
-    # kept and the spike timeline stays aligned with the screen timeline (same as export.py).
-    dsv = param_filter_query(data_store, sheet_name="V1_Exc_L2/3")
+    # kept and the spike timeline stays aligned with the screen timeline; no sheet_name filter so every
+    # recorded sheet is folded into spikes.npy (same as export.py). SHEET_NAMES env restricts the subset.
+    dsv = param_filter_query(data_store)
+
+    _sheet_env = os.environ.get("SHEET_NAMES", "").strip()
+    sheet_names = [s.strip() for s in _sheet_env.split(",") if s.strip()] or None
 
     spikes = MozaikTrialExporter(
-        responses_dir, trial_id=trial, sampling_rate=1000.0, append_mode=False
+        responses_dir,
+        trial_id=trial,
+        sampling_rate=1000.0,
+        append_mode=False,
+        sheet_names=sheet_names,
     )
     spikes.process_batch([dsv])
     spikes.finalize()
