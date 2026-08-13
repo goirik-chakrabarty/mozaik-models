@@ -5,6 +5,36 @@ Newest at top. Superseded blocks are annotated, never deleted. Template: `docs/R
 
 ---
 
+## 2026-08-13 — fresh test3 re-sim + inline MULTI-SHEET export, self-contained golden reference 🟢 PASS
+- **Goal:** produce a fresh test3 sim+export reference for the **all-sheets** exporter default, kept
+  self-contained in the repo, to re-bless the P1 export golden (`docs/plan/audit/golden/P1.json`, was single-sheet).
+- **Commit-tuple:** mozaik **`csng-mozaik-update @ b108a9d`** (multi-sheet exporter + meta_workflow driver) ·
+  mozaik-models **`main-mozaik-update @ 9cd5d1b`** (thin callers, multi-sheet default) · experanto sibling
+  `goirik/experanto` · SIF `mozaik-opt-qpatch_2026-07-14.sif`.
+- **Config:** SLURM array `15264183` [0-2] (3 trials), `medium96s`/sapphirerapids, 12 ranks, OMP=1, MEM=250G.
+  Self-contained launchers `mozaik-models/experanto/golden/{test3_resim_multisheet.sbatch,run_one_trial.sh}`
+  call `run.py … results_dir '\''test3_ms_golden/'\'' simulation_seed <(t+1)*1000> trial<t>_chunk0 --export`
+  (bypasses the seed-broken cluster runner). Three-seed schema: model_seed=1023/experiment_seed=0 fixed;
+  simulation_seed={1000,2000,3000} per trial. SHEET_NAMES unset → ALL recorded sheets.
+- **Output (self-contained, gitignored):** `mozaik-models/experanto/test3_ms_golden/`
+  `SelfSustainedPushPull_trial{0,1,2}_chunk0_____simulation_seed:{1000,2000,3000}/{datastore, experanto/ shard}`.
+- **Metrics (all 3 trials):** n_signals **108150** (was 37500 single-sheet); sheets
+  `[X_ON, X_OFF, V1_Exc_L4, V1_Inh_L4, V1_Exc_L2/3, V1_Inh_L2/3]`; n_signals_layerwise
+  `[7200,7200,37500,9375,37500,9375]`; CSR + sheet-boundary consistent ✓; timeline invariant
+  end_time==timestamps[-1]==**12.446 s** ✓. Spikes per trial 9 878 954 / 9 892 911 / 9 865 756 — differ by
+  noise as designed (cross_trial_noise_varies ✓). ~14 min / ~18 core-h per trial.
+- **Golden:** re-blessed `P1.json` (multi-sheet) via extended `capture_p1_export.py` (records sheets /
+  n_signals_layerwise / sheet_unit_indices + boundary checks; resolves the inline-export dir layout). Old
+  single-sheet golden preserved as `P1.pre-multisheet.bak`. `GOLDEN OK`, all_pass ✓.
+- **Result / decision:** 🟢 PASS. Multi-sheet export validated end-to-end from a fresh sim; golden now tracks
+  the all-sheets production default and regenerates deterministically from the committed sbatch.
+- **Caveats / honesty:** (1) golden **data** is gitignored (regenerate via the sbatch — recorded in P1.json
+  `regenerated_by`). (2) LGN included (all recorded sheets); a V1-only golden would drop X_ON/X_OFF (~46% of
+  spikes). (3) csng lacks perf's export speedups (export ~2× slower; ToDo reconcile). (4) NEST-extension CMake
+  warnings in the container `.err` are benign (jobs exited 0:0).
+
+---
+
 ## 2026-08-04 — single-chunk sim + INLINE export on csng (workflow 2, three-seed migration) 🟢 PASS
 - **Goal:** validate (a) the three-stream seed migration of `param/defaults` (so sims run on
   `csng-mozaik-update`) and (b) the new inline export path in `run.py` (`--export`) that simulates one
