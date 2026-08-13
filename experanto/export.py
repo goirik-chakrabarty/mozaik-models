@@ -1,29 +1,19 @@
 import argparse
 import logging
+import os
 import sys
 
-from mozaik.analysis.analysis import *
-from mozaik.storage.datastore import PickledDataStore
-from mozaik.storage.queries import *
-from mozaik.storage.queries import param_filter_query
-from mozaik.tools.distribution_parametrization import load_parameters
-from parameters import ParameterSet
+# Import side effects: registers analysis classes needed to unpickle datastores, and puts the
+# Experanto package on the path (both container-specific — kept in this thin entry point).
+from mozaik.analysis.analysis import *  # noqa: F401,F403
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-import ast
-import gc
-import json
-import os
 
-import matplotlib.pyplot as plt
-import numpy as np
-from mozaik2experanto import (MozaikScreenExporter, MozaikTrialExporter,
-                              load_tier_reference)
-from mozaik.storage.datastore import DataStoreView
-from tqdm import tqdm
+from mozaik.meta_workflow.experanto_export import run_experanto_export
+from mozaik.tools.experanto_export import load_tier_reference
 
 sys.path.append("/experanto")
-import experanto
+import experanto  # noqa: F401
 
 """
   Usage examples:
@@ -117,7 +107,6 @@ export_spikes = not args.screen_only
 export_screen = not args.spikes_only
 chunk_start = args.chunk_start if args.chunk_start is not None else 0
 chunk_end = args.chunk_end if args.chunk_end is not None else args.n_chunks
-is_resume = chunk_start > 0
 
 chunk_dir = os.environ.get("CHUNK_DIR", "/data/mozaik_chunk")
 output_prefix = os.environ.get(
@@ -138,104 +127,23 @@ if args.tier_reference:
     tier_reference = load_tier_reference(args.tier_reference)
     print(f"Loaded {len(tier_reference)} condition_hash -> tier mappings")
 
-for trial in tqdm(args.trials):
-    experiment_dir = f"{output_prefix}{trial}"
-    responses_dir = f"{experiment_dir}/responses/"
-
-    # Initialize spike exporter (append_mode if resuming from a previous chunk range)
-    if export_spikes:
-        exporter = MozaikTrialExporter(
-            responses_dir,
-            trial_id=trial,
-            sampling_rate=1000.0,
-            append_mode=is_resume,
-            sheet_names=sheet_names,
-        )
-
-    # Initialize screen exporter with ALL chunk JSONs (needed for correct
-    # timestamps.npy even when only processing a subset of chunks for spikes).
-    # Screen export is fast — no DataStore loading needed beyond resolving movie_path.
-    if export_screen:
-        chunk_paths = [f"{chunk_dir}/{trial}_{c}.json" for c in range(args.n_chunks)]
-        screen_exporter = MozaikScreenExporter(
-            output_dir=experiment_dir,
-            chunk_paths=chunk_paths,
-            frame_duration_ms=7.0,
-            movie_frame_duration_ms=35.0,
-            modality_filter=args.modality_filter,
-            tier_reference=tier_reference,
-        )
-
-    dsv_list = []
-    # In screen-only mode we only need one chunk to resolve movie_path
-    if args.screen_only:
-        chunks_to_load = range(chunk_start, min(chunk_start + 1, chunk_end))
-    else:
-        chunks_to_load = range(chunk_start, chunk_end)
-
-    # Resolve the datastore dir for each (trial, chunk) by globbing on the stable prefix
-    # "SelfSustainedPushPull_trial{t}_chunk{c}_____*". This is agnostic to which seed the sim
-    # used to disambiguate the run (old `lgn_stepcurrentsource_noise_seed:<n>` /
-    # `lgn_stepcurre_<sha1>:<n>` naming, or the new three-seed `simulation_seed:<n>` naming), so the
-    # export works regardless of the sim's seed scheme. Falls back to the historical explicit
-    # reconstruction if no dir matches the glob (backward-compatible).
-    import glob as _glob
-
-    from mozaik.tools.misc import result_directory_name
-
-    for i, chunk in enumerate(tqdm(chunks_to_load)):
-        run_prefix = f"SelfSustainedPushPull_trial{trial}_chunk{chunk}_____"
-        matches = sorted(_glob.glob(os.path.join(datastore_prefix, run_prefix + "*")))
-        if len(matches) == 1:
-            path = matches[0]
-        elif len(matches) > 1:
-            raise RuntimeError(
-                f"Ambiguous datastore for trial{trial}_chunk{chunk}: {len(matches)} dirs match "
-                f"'{run_prefix}*' under {datastore_prefix!r}: {[os.path.basename(m) for m in matches]}"
-            )
-        else:
-            # No glob match — fall back to the old-scheme explicit name.
-            seed = trial * 1000 + chunk
-            ddir = result_directory_name(
-                f"trial{trial}_chunk{chunk}",
-                "SelfSustainedPushPull",
-                {"lgn_stepcurrentsource_noise_seed": seed},
-            )
-            path = os.path.join(datastore_prefix, ddir)
-
-        # Load DataStore
-        data_store = PickledDataStore(
-            load=True,
-            parameters=ParameterSet({"root_directory": path, "store_stimuli": False}),
-            replace=False,
-        )
-
-        # Create View — no st_name filter so blank segments (InternalStimulus) are included, keeping
-        # the spike timeline aligned with the screen timeline; no sheet_name filter so every recorded
-        # sheet is available (the exporter selects/folds sheets per `sheet_names`).
-        dsv = param_filter_query(data_store)
-        dsv_list.append(dsv)
-
-        # Process in batches to manage memory
-        if (i + 1) % args.batch_size == 0:
-            if export_spikes:
-                exporter.process_batch(dsv_list)
-            if export_screen:
-                screen_exporter.process_batch(dsv_list)
-
-            dsv_list = []
-            del data_store
-            gc.collect()
-
-    # Process any remaining items in the list
-    if dsv_list:
-        if export_spikes:
-            exporter.process_batch(dsv_list)
-        if export_screen:
-            screen_exporter.process_batch(dsv_list)
-
-    # Finalize
-    if export_spikes:
-        exporter.finalize()
-    if export_screen:
-        screen_exporter.finalize()
+# Delegate the whole trial/chunk loop (datastore resolution, batching, resume/append, finalize) to
+# the generic driver in the mozaik package. Project-specific path patterns stay here as closures:
+#   - output_dir_for_trial: where each trial's Experanto shard is written
+#   - chunk_paths_for_trial: ALL chunk JSONs for the trial (screen timestamps need every chunk even
+#     when only a subset is processed for spikes)
+run_experanto_export(
+    trials=args.trials,
+    n_chunks=args.n_chunks,
+    output_dir_for_trial=lambda t: f"{output_prefix}{t}",
+    chunk_paths_for_trial=lambda t: [f"{chunk_dir}/{t}_{c}.json" for c in range(args.n_chunks)],
+    datastore_prefix=datastore_prefix,
+    sheet_names=sheet_names,
+    chunk_start=chunk_start,
+    chunk_end=chunk_end,
+    batch_size=args.batch_size,
+    export_spikes=export_spikes,
+    export_screen=export_screen,
+    modality_filter=args.modality_filter,
+    tier_reference=tier_reference,
+)

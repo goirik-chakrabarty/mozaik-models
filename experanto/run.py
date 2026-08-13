@@ -53,16 +53,14 @@ def export_datastore_inline(data_store):
     create_randomized_experanto uses). Rank-0 only: PyNN gathers all ranks onto MPI_ROOT, so only
     rank 0's in-memory store holds every neuron's spikes.
     """
+    from mozaik.meta_workflow.experanto_export import export_dsvs_to_experanto
     from mozaik.storage.queries import param_filter_query
-    from mozaik.tools.experanto_export import (MozaikScreenExporter,
-                                                MozaikTrialExporter)
 
     trial = int(os.environ.get("TRIAL", 0))
     chunk = int(os.environ.get("CHUNK", 0))
     chunk_dir = os.environ.get("CHUNK_DIR", "/data/mozaik_chunk")
 
     experiment_dir = os.path.join(data_store.parameters.root_directory, "experanto")
-    responses_dir = os.path.join(experiment_dir, "responses") + "/"
     chunk_path = f"{chunk_dir}/{trial}_{chunk}.json"
     print(
         f"[inline-export] trial={trial} chunk={chunk} -> {experiment_dir} "
@@ -78,24 +76,15 @@ def export_datastore_inline(data_store):
     _sheet_env = os.environ.get("SHEET_NAMES", "").strip()
     sheet_names = [s.strip() for s in _sheet_env.split(",") if s.strip()] or None
 
-    spikes = MozaikTrialExporter(
-        responses_dir,
+    export_dsvs_to_experanto(
+        [dsv],
+        experiment_dir,
         trial_id=trial,
-        sampling_rate=1000.0,
-        append_mode=False,
-        sheet_names=sheet_names,
-    )
-    spikes.process_batch([dsv])
-    spikes.finalize()
-
-    screen = MozaikScreenExporter(
-        output_dir=experiment_dir,
         chunk_paths=[chunk_path],
+        sheet_names=sheet_names,
         frame_duration_ms=7.0,
         movie_frame_duration_ms=35.0,
     )
-    screen.process_batch([dsv])
-    screen.finalize()
     print(f"[inline-export] done -> {experiment_dir}", flush=True)
 
 
