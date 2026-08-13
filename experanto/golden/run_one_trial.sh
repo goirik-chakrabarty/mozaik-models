@@ -5,7 +5,10 @@
 # gitignored via *SelfSustainedPushPull*). Self-contained: no output leaves the repo tree.
 #
 # Env (from the sbatch): TRIAL, SIMSEED, CHUNK, CHUNK_DIR, NTASKS, OMP_NUM_THREADS.
+# Optional: RESULTS_DIR (default test3_ms_golden/) — override to a fresh dir for determinism re-checks.
 set -euo pipefail
+
+RESULTS_DIR="${RESULTS_DIR:-test3_ms_golden/}"
 
 # The `parameters` package crashes on import if HTTP_PROXY is set (references an unimported HTTPHandler).
 unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY || true
@@ -22,7 +25,7 @@ mpirun -n "$NTASKS" --bind-to none --oversubscribe \
     -x OMP_NUM_THREADS -x MKL_NUM_THREADS -x OPENBLAS_NUM_THREADS \
     -x PYTHONPATH -x TRIAL -x CHUNK -x CHUNK_DIR \
     python -u run.py nest "$NTASKS" param/defaults \
-        results_dir "'test3_ms_golden/'" simulation_seed "$SIMSEED" \
+        results_dir "'${RESULTS_DIR}'" simulation_seed "$SIMSEED" \
         "trial${TRIAL}_chunk0" --export
 
-echo "[run_one_trial] DONE trial=$TRIAL -> /project/test3_ms_golden/SelfSustainedPushPull_trial${TRIAL}_chunk0_____simulation_seed:${SIMSEED}/experanto/"
+echo "[run_one_trial] DONE trial=$TRIAL -> /project/${RESULTS_DIR}SelfSustainedPushPull_trial${TRIAL}_chunk0_____simulation_seed:${SIMSEED}/experanto/"
